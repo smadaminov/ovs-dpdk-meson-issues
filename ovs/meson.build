@@ -105,21 +105,32 @@ check_functions = [
 # check token ['HAVE___THREAD']
 ]
 
-check_structs = [
-  ['HAVE_NLA_BITFIELD32', 'value', 'struct nla_bitfield32'],
-]
-
 foreach f : check_functions
   if cc.has_function(f.get(1), prefix : f.get(2))
     cdata.set(f.get(0), 1)
   endif
 endforeach
 
+check_structs = [
+  ['HAVE_NLA_BITFIELD32', 'value', 'struct nla_bitfield32'],
+]
+
 foreach s : check_structs
   if cc.has_member(s.get(2), s.get(1), prefix : '#include<linux/netlink.h>')
     cdata.set(s.get(0), 1)
   endif
 endforeach
+
+#enable_uses = [
+#  ['__USE_POSIX', 'bits/posix1_lim.h'],
+#  ['__USE_XOPEN', 'bits/xopen_lim.h'],
+#]
+#
+#foreach u : enable_uses
+#  if cc.has_header(u.get(1))
+#    cdata.set(u.get(0), 1)
+#  endif
+#endforeach
 
 cdata.set('PACKAGE_STRING', '"' + meson.project_name() + ' ' + as_version + '"')
 cdata.set('VERSION', '"' + as_version + '"')
