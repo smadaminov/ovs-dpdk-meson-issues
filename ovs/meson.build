@@ -85,7 +85,6 @@ check_functions = [
 # check token ['HAVE_STRNLEN']
 # check token ['HAVE_STRTOK_R_BUG']
 # check token ['HAVE_STRUCT_IFREQ_IFR_FLAGSHIGH']
-# check token ['HAVE_STRUCT_MMSGHDR_MSG_LEN']
 # check token ['HAVE_STRUCT_SOCKADDR_IN6_SIN6_SCOPE_ID']
 # check token ['HAVE_STRUCT_STAT_ST_MTIMENSEC']
 # check token ['HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC']
@@ -112,11 +111,12 @@ foreach f : check_functions
 endforeach
 
 check_structs = [
-  ['HAVE_NLA_BITFIELD32', 'value', 'struct nla_bitfield32'],
+  ['HAVE_NLA_BITFIELD32', 'value', 'struct nla_bitfield32', '#include<linux/netlink.h>', []],
+  ['HAVE_STRUCT_MMSGHDR_MSG_LEN', 'msg_len', 'struct mmsghdr', '#include<sys/socket.h>', ['-D_GNU_SOURCE']],
 ]
 
 foreach s : check_structs
-  if cc.has_member(s.get(2), s.get(1), prefix : '#include<linux/netlink.h>')
+  if cc.has_member(s.get(2), s.get(1), prefix : s.get(3), args: s.get(4))
     cdata.set(s.get(0), 1)
   endif
 endforeach
