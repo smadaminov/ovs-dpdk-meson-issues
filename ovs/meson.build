@@ -55,7 +55,7 @@ check_functions = [
 # check token ['HAVE_AF_XDP']
 # check token ['HAVE_ATOMIC']
 # check token ['HAVE_BACKTRACE']
-  ['HAVE_CLOCK_GETTIME', 'clock_gettime', '#include<time.h>'],
+  ['HAVE_CLOCK_GETTIME', 'clock_gettime', '#include<time.h>', []],
 # check token ['HAVE_CXX11']
 # check token ['HAVE_DECL_MALLOC_TRIM']
 # check token ['HAVE_DECL_RTE_EAL_NUMA_AWARE_HUGEPAGES']
@@ -63,8 +63,8 @@ check_functions = [
 # check token ['HAVE_DECL_STRERROR_R']
 # check token ['HAVE_DECL_SYS_SIGLIST']
 # check token ['HAVE_GCC4_ATOMICS']
-  ['HAVE_GETLOADAVG', 'getloadavg', '#include<stdlib.h>'],
-  ['HAVE_GETMNTENT_R', 'getmntent_r', '#include<mntent.h>'],
+  ['HAVE_GETLOADAVG', 'getloadavg', '#include<stdlib.h>', []],
+  ['HAVE_GETMNTENT_R', 'getmntent_r', '#include<mntent.h>', []],
 # check token ['HAVE_GLIBC_PTHREAD_SETNAME_NP']
 # check token ['HAVE_IF_DL']
 # check token ['HAVE_LIBCAPNG']
@@ -74,14 +74,14 @@ check_functions = [
 # check token ['HAVE_NETLINK']
 # check token ['HAVE_NLA_BITFIELD32']
 # check token ['HAVE_OPENSSL']
-  ['HAVE_POSIX_MEMALIGN', 'posix_memalign', '#include<stdlib.h>'],
+  ['HAVE_POSIX_MEMALIGN', 'posix_memalign', '#include<stdlib.h>', []],
 # check token ['HAVE_PRAGMA_MESSAGE']
-  ['HAVE_PTHREAD_SET_NAME_NP', 'pthread_set_name_np', '#include<pthread.h>'],
+  ['HAVE_PTHREAD_SET_NAME_NP', 'pthread_set_name_np', '#include<pthread.h>', []],
 # check token ['HAVE_PTHREAD_SPIN_LOCK']
 # check token ['HAVE_SCTP_CONNTRACK_HEARTBEATS']
-  ['HAVE_SENDMMSG', 'sendmmsg', '#include<sys/socket.h>'],
-  ['HAVE_STATVFS', 'statvfs', '#include<sys/statvfs.h>'],
-  ['HAVE_STRERROR_R', 'strerror_r', '#include<string.h>'],
+  ['HAVE_SENDMMSG', 'sendmmsg', '#include<sys/socket.h>', ['-D_GNU_SOURCE']],
+  ['HAVE_STATVFS', 'statvfs', '#include<sys/statvfs.h>', []],
+  ['HAVE_STRERROR_R', 'strerror_r', '#include<string.h>', []],
 # check token ['HAVE_STRNLEN']
 # check token ['HAVE_STRTOK_R_BUG']
 # check token ['HAVE_STRUCT_IFREQ_IFR_FLAGSHIGH']
@@ -105,7 +105,7 @@ check_functions = [
 ]
 
 foreach f : check_functions
-  if cc.has_function(f.get(1), prefix : f.get(2))
+  if cc.has_function(f.get(1), prefix : f.get(2), args : f.get(3))
     cdata.set(f.get(0), 1)
   endif
 endforeach
@@ -116,7 +116,7 @@ check_structs = [
 ]
 
 foreach s : check_structs
-  if cc.has_member(s.get(2), s.get(1), prefix : s.get(3), args: s.get(4))
+  if cc.has_member(s.get(2), s.get(1), prefix : s.get(3), args : s.get(4))
     cdata.set(s.get(0), 1)
   endif
 endforeach
