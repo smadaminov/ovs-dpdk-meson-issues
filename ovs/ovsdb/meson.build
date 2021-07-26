@@ -51,6 +51,8 @@ executable('ovsdb-tool', sources,
     include_directories : global_inc,
     link_args : ['-Wl,--no-undefined'],
     link_with : [ ovsdb, openvswitch ],
+    install : true,
+    install_dir: install_prefix / 'bin',
 )
 
 sources = files(
@@ -64,6 +66,8 @@ executable('ovsdb-client', sources,
     include_directories : global_inc,
     link_args : ['-Wl,--no-undefined'],
     link_with : [ ovsdb, openvswitch ],
+    install : true,
+    install_dir: install_prefix / 'bin',
 )
 
 sources = files(
@@ -77,4 +81,6 @@ executable('ovsdb-server', sources,
     include_directories : global_inc,
     link_args : ['-Wl,--no-undefined'],
     link_with : [ ovsdb, openvswitch ],
+    install : true,
+    install_dir: install_prefix / 'sbin',
 )

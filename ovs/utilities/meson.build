@@ -12,6 +12,8 @@ executable('ovs-appctl', sources,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined'],
   link_with : openvswitch,
+  install : true,
+  install_dir: install_prefix / 'bin',
 )
 
 sources = files(
@@ -25,6 +27,8 @@ executable('ovs-testcontroller', sources,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined'],
   link_with : openvswitch,
+  install : true,
+  install_dir: install_prefix / 'bin',
 )
 
 sources = files(
@@ -38,6 +42,8 @@ executable('ovs-dpctl', sources,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined'],
   link_with : openvswitch,
+  install : true,
+  install_dir: install_prefix / 'bin',
 )
 
 sources = files(
@@ -51,6 +57,8 @@ executable('ovs-ofctl', sources,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined'],
   link_with : [ openvswitch, ofproto ],
+  install : true,
+  install_dir: install_prefix / 'bin',
 )
 
 sources = files(
@@ -64,4 +72,6 @@ executable('ovs-vsctl', sources,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined'],
   link_with : openvswitch,
+  install : true,
+  install_dir: install_prefix / 'bin',
 )

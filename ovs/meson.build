@@ -180,6 +180,8 @@ add_project_arguments(
     language : 'c',
 )
 
+install_prefix = '/usr/local/'
+
 subdir('lib')
 subdir('ofproto')
 subdir('utilities')

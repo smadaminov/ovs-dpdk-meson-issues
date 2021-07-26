@@ -15,4 +15,6 @@ executable('ovs-vswitchd', sources,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined'],
   link_with : [ openvswitch, ofproto, sflow ],
+  install : true,
+  install_dir: install_prefix / 'sbin',
 )
