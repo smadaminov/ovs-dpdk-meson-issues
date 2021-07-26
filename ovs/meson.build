@@ -18,6 +18,10 @@ as_age_version      = ver_arr[2]
 cc = meson.get_compiler('c')
 
 cdata = configuration_data()
+
+thread_dep = dependency('threads', required : true)
+m_dep = cc.find_library('m', required : true)
+
 check_headers = [
   ['HAVE_BITS_FLOATN_COMMON_H', 'bits/floatn/common.h'],
   ['HAVE_DLFCN_H', 'dlfcn.h'],
@@ -131,9 +135,6 @@ endforeach
 #    cdata.set(u.get(0), 1)
 #  endif
 #endforeach
-
-thread_dep = dependency('threads', required : true)
-m_dep = cc.find_library('m', required : true)
 
 cdata.set('PACKAGE_STRING', '"' + meson.project_name() + ' ' + as_version + '"')
 cdata.set('VERSION', '"' + as_version + '"')
