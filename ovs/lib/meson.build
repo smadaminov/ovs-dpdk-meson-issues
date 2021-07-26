@@ -242,11 +242,12 @@ sources = files(
     'dns-resolve-stub.c',
 )
 
-deps = []
+thread_dep = dependency('threads')
+deps = [ thread_dep ]
 
 mapfile = 'openvswitch.map'
 vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
-sflow = static_library(
+openvswitch = static_library(
   'openvswitch', sources,
   dependencies : deps,
   include_directories : global_inc,
@@ -254,3 +255,7 @@ sflow = static_library(
   link_depends : mapfile,
   link_with : openvswitchavx512,
 )
+
+global_libs += openvswitchavx512
+global_libs += sflow
+global_libs += openvswitch

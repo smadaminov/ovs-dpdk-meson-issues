@@ -145,6 +145,8 @@ global_inc = include_directories(
     'lib',
 )
 
+global_libs = []
+
 add_project_arguments('-Wstrict-prototypes', language : 'c')
 add_project_arguments(
     '-Wall',
@@ -175,4 +177,9 @@ add_project_arguments(
 )
 
 subdir('lib')
+subdir('ofproto')
+subdir('utilities')
+subdir('vtep')
+subdir('vswitchd')
+subdir('ovsdb')
 #subdir('datapath')

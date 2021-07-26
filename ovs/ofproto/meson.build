@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright(c) 2021 VMware, Inc.
+
+sources = files(
+	'bond.c',
+	'collectors.c',
+	'connmgr.c',
+	'fail-open.c',
+	'in-band.c',
+	'names.c',
+	'netflow.c',
+	'ofproto.c',
+	'ofproto-dpif.c',
+	'ofproto-dpif-ipfix.c',
+	'ofproto-dpif-mirror.c',
+	'ofproto-dpif-monitor.c',
+	'ofproto-dpif-rid.c',
+	'ofproto-dpif-sflow.c',
+	'ofproto-dpif-trace.c',
+	'ofproto-dpif-upcall.c',
+	'ofproto-dpif-xlate.c',
+	'ofproto-dpif-xlate-cache.c',
+	'pinsched.c',
+	'tunnel.c',
+	'bundles.c',
+)
+
+deps = []
+
+mapfile = 'ofproto.map'
+vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
+ofproto = static_library(
+  'ofproto', sources,
+  dependencies : deps,
+  include_directories : global_inc,
+  link_args : ['-Wl,--no-undefined', vflag],
+  link_depends : mapfile,
+  link_with : sflow,
+)
