@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2021 VMware, Inc.
 
-m_dep = cc.find_library('m', required : true)
-
 sources = files(
     'bridge.c',
     'ovs-vswitchd.c',

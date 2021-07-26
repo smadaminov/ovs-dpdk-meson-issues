@@ -242,7 +242,6 @@ sources = files(
     'dns-resolve-stub.c',
 )
 
-thread_dep = dependency('threads')
 deps = [ thread_dep ]
 
 mapfile = 'openvswitch.map'

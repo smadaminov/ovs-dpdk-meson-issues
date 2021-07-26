@@ -132,6 +132,9 @@ endforeach
 #  endif
 #endforeach
 
+thread_dep = dependency('threads', required : true)
+m_dep = cc.find_library('m', required : true)
+
 cdata.set('PACKAGE_STRING', '"' + meson.project_name() + ' ' + as_version + '"')
 cdata.set('VERSION', '"' + as_version + '"')
 
