@@ -17,27 +17,29 @@ sources = files(
 	'raft-rpc.c',
 	'rbac.c',
 	'replication.c',
-	'relay.c',
+#	'relay.c',
 	'row.c',
 	'server.c',
 	'storage.c',
 	'table.c',
 	'trigger.c',
 	'transaction.c',
-	'transaction-forward.c',
+#	'transaction-forward.c',
 	'ovsdb-util.c',
 )
 
 deps = []
 
-mapfile = 'ovsdb.map'
+mapfile = meson.project_build_root() + '/ovsdb.map'
 vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
-ovsdb = static_library(
+ovsdb = library(
   'ovsdb', sources,
   dependencies : deps,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined', vflag],
   link_depends : mapfile,
+  version : as_version,
+  soversion : as_soversion,
 )
 
 sources = files(

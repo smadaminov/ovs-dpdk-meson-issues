@@ -1,31 +1,34 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2021 VMware, Inc.
 
-sources = files(
-    'dpif-netdev-lookup-avx512-gather.c',
-    'dpif-netdev-extract-avx512.c',
-    'dpif-netdev-avx512.c',
-)
-
-deps = []
-
-mapfile = 'openvswitchavx512.map'
-vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
-openvswitchavx512 = static_library(
-  'openvswitchavx512', sources,
-  dependencies : deps,
-  include_directories : global_inc,
-  c_args : [
-    '-mavx512f',
-    '-mavx512bw',
-    '-mavx512dq',
-    '-mbmi',
-    '-mbmi2',
-    '-fPIC',
-  ],
-  link_args : ['-Wl,--no-undefined', vflag],
-  link_depends : mapfile,
-)
+#sources = files(
+#    'dpif-netdev-lookup-avx512-gather.c',
+#    'dpif-netdev-extract-avx512.c',
+#    'dpif-netdev-avx512.c',
+#)
+#
+#deps = []
+#
+#mapfile = '../openvswitchavx512.map'
+#vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
+#openvswitchavx512 = library(
+#  'openvswitchavx512', sources,
+#  dependencies : deps,
+#  include_directories : global_inc,
+#  c_args : [
+#    '-mavx512f',
+#    '-mavx512bw',
+#    '-mavx512dq',
+#    '-mbmi',
+#    '-mbmi2',
+#    '-fPIC',
+#  ],
+#  link_args : ['-Wl,--no-undefined', vflag],
+#  link_depends : mapfile,
+#  version : as_version,
+#  soversion : as_soversion,
+#)
+#
 
 sources = files(
     'sflow_agent.c',
@@ -36,14 +39,36 @@ sources = files(
 
 deps = []
 
-mapfile = 'sflow.map'
+mapfile = meson.project_build_root() + '/sflow.map'
 vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
-sflow = static_library(
+sflow = library(
   'sflow', sources,
   dependencies : deps,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined', vflag],
   link_depends : mapfile,
+  version : as_version,
+  soversion : as_soversion,
+)
+
+# MSR: file generation probably should be moved to a separate folder with its own meson.build file
+# lib/meta-flow.inc
+prog_python = import('python').find_installation('python3')
+lib_meta_flow_inc = custom_target(
+    'meta-flow.inc',
+    input : meson.project_source_root() + '/include/openvswitch/meta-flow.h',
+    output : 'meta-flow.inc',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/build-aux/extract-ofp-fields',
+        'meta-flow', 
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
 )
 
 sources = files(
@@ -73,14 +98,14 @@ sources = files(
 	'dummy.c',
 	'dpctl.c',
 	'dp-packet.c',
-	'dpif-netdev-extract-study.c',
+#	'dpif-netdev-extract-study.c',
 	'dpif-netdev-lookup.c',
 	'dpif-netdev-lookup-autovalidator.c',
 	'dpif-netdev-lookup-generic.c',
 	'dpif-netdev.c',
 	'dpif-netdev-private-dfc.c',
 	'dpif-netdev-private-dpif.c',
-	'dpif-netdev-private-extract.c',
+#	'dpif-netdev-private-extract.c',
 	'dpif-netdev-perf.c',
 	'dpif.c',
 	'heap.c',
@@ -219,7 +244,7 @@ sources = files(
 	'signals.c',
 	'socket-util-unix.c',
 	'stream-unix.c',
-    'dirs.c',
+#    'dirs.c',
 	'ovsdb-server-idl.c',
 	'vswitch-idl.c',
 # Linux specific start    
@@ -242,19 +267,23 @@ sources = files(
     'dns-resolve-stub.c',
 )
 
+sources += lib_meta_flow_inc
+
 deps = [ thread_dep ]
 
-mapfile = 'openvswitch.map'
+mapfile = meson.project_build_root() + '/openvswitch.map'
 vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
-openvswitch = static_library(
-  'openvswitch', sources,
-  dependencies : deps,
-  include_directories : global_inc,
-  link_args : ['-Wl,--no-undefined', vflag],
-  link_depends : mapfile,
-  link_with : openvswitchavx512,
+openvswitch = library(
+    'openvswitch', sources,
+    dependencies : deps,
+    include_directories : global_inc,
+    link_args : ['-Wl,--no-undefined', vflag],
+    link_depends : mapfile,
+#    link_with : openvswitchavx512,
+    version : as_version,
+    soversion : as_soversion,
 )
 
-global_libs += openvswitchavx512
+#global_libs += openvswitchavx512
 global_libs += sflow
 global_libs += openvswitch

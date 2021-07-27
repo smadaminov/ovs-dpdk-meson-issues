@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2021 VMware, Inc.
 
+# Meson Newer Version Justification
+# Version 0.56.0: enables 'project_build_root' for 'meson' object
+# Version 0.57.0: enables use of 'env' in 'custom_target'
+
 project('openvswitch', 'C',
         version: '2.16.90',
         license: 'Apache2.0',
         default_options: ['buildtype=release', 'default_library=static'],
-        meson_version: '>= 0.49.2'
+        meson_version: '>= 0.57.0'
 )
 
 as_version = meson.project_version()
@@ -14,6 +18,10 @@ ver_arr = as_version.split('.')
 as_current_version  = ver_arr[0]
 as_revision_version = ver_arr[1]
 as_age_version      = ver_arr[2]
+
+as_soversion = '0'
+conf_soversion = configuration_data()
+conf_soversion.set('SOVERSION', as_soversion)
 
 cc = meson.get_compiler('c')
 
@@ -142,6 +150,22 @@ cdata.set('VERSION', '"' + as_version + '"')
 configure_file(input : 'config.h.meson',
   output : 'config.h',
   configuration : cdata)
+
+map_files = [
+    ['lib', 'sflow.map'],
+    ['lib', 'openvswitch.map'],
+    ['ovsdb', 'ovsdb.map'],
+    ['ofproto', 'ofproto.map'],
+    ['vtep', 'vtep.map'],
+]
+
+foreach m : map_files
+    configure_file(
+        input : m.get(0) + '/' + m.get(1) + '.in',
+        output : m.get(1),
+        configuration : conf_soversion,
+    )
+endforeach
 
 global_inc = include_directories(
     '.',

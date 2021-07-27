@@ -27,13 +27,15 @@ sources = files(
 
 deps = []
 
-mapfile = 'ofproto.map'
+mapfile = meson.project_build_root() + '/ofproto.map'
 vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
-ofproto = static_library(
+ofproto = library(
   'ofproto', sources,
   dependencies : deps,
   include_directories : global_inc,
   link_args : ['-Wl,--no-undefined', vflag],
   link_depends : mapfile,
   link_with : sflow,
+  version : as_version,
+  soversion : as_soversion,
 )
