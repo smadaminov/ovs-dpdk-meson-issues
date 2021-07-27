@@ -61,7 +61,25 @@ lib_meta_flow_inc = custom_target(
     command : [
         prog_python,
         meson.project_source_root() + '/build-aux/extract-ofp-fields',
-        'meta-flow', 
+        'meta-flow',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+# lib/nx-match.inc
+lib_nx_match_inc = custom_target(
+    'nx-match.inc',
+    input : meson.project_source_root() + '/include/openvswitch/meta-flow.h',
+    output : 'nx-match.inc',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/build-aux/extract-ofp-fields',
+        'nx-match',
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
@@ -267,7 +285,10 @@ sources = files(
     'dns-resolve-stub.c',
 )
 
-sources += lib_meta_flow_inc
+sources += [
+    lib_meta_flow_inc,
+    lib_nx_match_inc,
+]
 
 deps = [ thread_dep ]
 
