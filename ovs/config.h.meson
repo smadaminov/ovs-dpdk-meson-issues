@@ -79,8 +79,9 @@
 
 /* Define to 1 if pthread_setname_np() is available and takes 2 parameters
    (like glibc). */
+/* MSR: fix this */
 #mesondefine HAVE_GLIBC_PTHREAD_SETNAME_NP
-
+/* #define HAVE_GLIBC_PTHREAD_SETNAME_NP 1 */
 /* Define to 1 if net/if_dl.h is available. */
 #mesondefine HAVE_IF_DL
 
@@ -144,7 +145,7 @@
 
 /* Define to 1 if you have the `pthread_spin_lock' function. */
 #mesondefine HAVE_PTHREAD_SPIN_LOCK
-
+/* #define HAVE_PTHREAD_SPIN_LOCK 1 */
 /* Define to 1 if you have the <rte_config.h> header file. */
 #mesondefine HAVE_RTE_CONFIG_H
 
@@ -233,7 +234,7 @@
 #mesondefine HAVE_TCA_VLAN_PUSH_VLAN_PRIORITY
 
 /* Define to 1 if the C compiler and linker supports the C11 thread_local
-   matcro defined in <threads.h>. */
+   macro defined in <threads.h>. */
 #mesondefine HAVE_THREAD_LOCAL
 
 /* Define to 1 if unbound is detected. */
@@ -293,23 +294,23 @@
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
-#mesondefine _ALL_SOURCE
+# mesondefine _ALL_SOURCE
 #endif
 /* Enable GNU extensions on systems that have them.  */
 #ifndef _GNU_SOURCE
-#mesondefine _GNU_SOURCE
+# mesondefine _GNU_SOURCE
 #endif
 /* Enable threading extensions on Solaris.  */
 #ifndef _POSIX_PTHREAD_SEMANTICS
-#mesondefine _POSIX_PTHREAD_SEMANTICS
+# mesondefine _POSIX_PTHREAD_SEMANTICS
 #endif
 /* Enable extensions on HP NonStop.  */
 #ifndef _TANDEM_SOURCE
-#mesondefine _TANDEM_SOURCE
+# mesondefine _TANDEM_SOURCE
 #endif
 /* Enable general extensions on Solaris.  */
 #ifndef __EXTENSIONS__
-#mesondefine __EXTENSIONS__
+# mesondefine __EXTENSIONS__
 #endif
 
 /* Version number of package */
@@ -327,13 +328,13 @@
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #if defined AC_APPLE_UNIVERSAL_BUILD
-#if defined __BIG_ENDIAN__
-#define WORDS_BIGENDIAN 1
-#endif
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
 #else
-#ifndef WORDS_BIGENDIAN
-#mesondefine WORDS_BIGENDIAN
-#endif
+# ifndef WORDS_BIGENDIAN
+#  mesondefine WORDS_BIGENDIAN
+# endif
 #endif
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
@@ -357,10 +358,11 @@
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 #mesondefine _POSIX_SOURCE
 
+/* MSR: fix this hack */
 #ifndef WIN32
-#ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1
-#endif
+# ifndef _GNU_SOURCE
+#  define _GNU_SOURCE 1
+# endif
 /* Define __USE_POSIX if you have the <bits/posix1_lim.h> header file
    and you are on Linux (or other POSIX compliant OS) */
 /* #mesondefine __USE_POSIX */
@@ -370,6 +372,7 @@
 /* #mesondefine __USE_XOPEN */
 #endif
 
+/* MSR: fix this - move this to the build file itself */
 #ifdef WIN32
-#include "include/windows/windefs.h"
+# include "include/windows/windefs.h"
 #endif
