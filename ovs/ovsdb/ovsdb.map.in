@@ -1,0 +1,4 @@
+libovsdb_@SOVERSION@ {
+global:
+    *;
+};

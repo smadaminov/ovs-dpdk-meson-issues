@@ -1,0 +1,4 @@
+libofproto_@SOVERSION@ {
+global:
+    *;
+};
