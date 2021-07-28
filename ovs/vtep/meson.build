@@ -1,9 +1,51 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2021 VMware, Inc.
 
-sources = files(
+vtep_vtep_idl_c = custom_target(
     'vtep-idl.c',
+#    input : meson.project_source_root() + '/vtep/vtep-idl.ovsidl',
+    input : vtep_vtep_idl_ovsidl,
+    output : 'vtep-idl.c',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'c-idl-source',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
 )
+
+vtep_vtep_idl_h = custom_target(
+    'vtep-idl.h',
+#    input : meson.project_source_root() + '/vtep/vtep-idl.ovsidl',
+    input : vtep_vtep_idl_ovsidl,
+    output : 'vtep-idl.h',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'c-idl-header',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+#sources = files(
+#    'vtep-idl.c',
+#)
+sources = [
+    vtep_vtep_idl_c,
+    vtep_vtep_idl_h,
+]
 
 deps = []
 
@@ -22,6 +64,10 @@ vtep = library(
 sources = files(
     'vtep-ctl.c',
 )
+
+sources += [
+    vtep_vtep_idl_h,
+]
 
 deps = []
 

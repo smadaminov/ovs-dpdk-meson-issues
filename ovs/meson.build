@@ -168,9 +168,18 @@ foreach m : map_files
     )
 endforeach
 
-c_in_files = [
-    ['lib', 'dirs.c'],
-]
+ovs_lib_version = '0'
+ovs_lib_revision = '0'
+ovs_lib_age = '0'
+
+conf_version = configuration_data()
+conf_version.set('PACKAGE_STRING', meson.project_name() + ' ' + as_version)
+conf_version.set('PACKAGE_VERSION', as_version)
+conf_version.set('LT_CURRENT', ovs_lib_version)
+conf_version.set('LT_REVISION', ovs_lib_revision)
+conf_version.set('LT_AGE', ovs_lib_age)
+
+subdir('include')
 
 # MSR: this is temporary hard-coded
 # though values are taken from the 'config.log'
@@ -185,6 +194,12 @@ cin_processing.set_quoted('DBDIR', '/etc/openvswitch')
 cin_processing.set_quoted('bindir', '/bin')
 cin_processing.set_quoted('sysconfdir', '/etc')
 cin_processing.set_quoted('pkgdatadir', '/usr/share/openvswitch')
+
+subdir('python/ovs')
+
+c_in_files = [
+    ['lib', 'dirs.c'],
+]
 
 foreach cin : c_in_files
     configure_file(
@@ -232,6 +247,81 @@ add_project_arguments(
 )
 
 install_prefix = '/usr/local/'
+
+#ovsidl_files = [
+#    ['lib', 'ovsdb-server-idl'],
+#    ['lib', 'vswitch-idl'],
+#    ['vtep', 'vtep-idl'],
+#    ['tests', 'idltest'],
+#]
+
+# MSR: file generation probably should be moved to a separate folder with its own meson.build file
+prog_python = import('python').find_installation('python3')
+lib_ovsdb_server_idl_ovsidl = custom_target(
+    'ovsdb-server-idl.ovsidl',
+    input : [
+        meson.project_source_root() + '/ovsdb/_server.ovsschema',
+        meson.project_source_root() + '/lib/ovsdb-server-idl.ann',
+    ],
+    output : 'ovsdb-server-idl.ovsidl',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'annotate',
+        '@INPUT0@',
+        '@INPUT1@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+lib_vswitch_idl_ovsidl = custom_target(
+    'vswitch-idl.ovsidl',
+    input : [
+        meson.project_source_root() + '/vswitchd/vswitch.ovsschema',
+        meson.project_source_root() + '/lib/vswitch-idl.ann',
+    ],
+    output : 'vswitch-idl.ovsidl',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'annotate',
+        '@INPUT0@',
+        '@INPUT1@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+vtep_vtep_idl_ovsidl = custom_target(
+    'vtep-idl.ovsidl',
+    input : [
+        meson.project_source_root() + '/vtep/vtep.ovsschema',
+        meson.project_source_root() + '/vtep/vtep-idl.ann',
+    ],
+    output : 'vtep-idl.ovsidl',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'annotate',
+        '@INPUT0@',
+        '@INPUT1@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
 
 subdir('lib')
 subdir('ofproto')

@@ -1,6 +1,24 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2021 VMware, Inc.
 
+# ovsdb/_server.ovsschema.inc
+ovsdb__server_ovsschema_inc = custom_target(
+    '_server.ovsschema.inc',
+    input : meson.project_source_root() + '/ovsdb/_server.ovsschema',
+    output : '_server.ovsschema.inc',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/build-aux/text2c',
+    ],
+    feed : true,
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
 sources = files(
 	'column.c',
 	'condition.c',
@@ -17,14 +35,14 @@ sources = files(
 	'raft-rpc.c',
 	'rbac.c',
 	'replication.c',
-#	'relay.c',
+	'relay.c',
 	'row.c',
 	'server.c',
 	'storage.c',
 	'table.c',
 	'trigger.c',
 	'transaction.c',
-#	'transaction-forward.c',
+	'transaction-forward.c',
 	'ovsdb-util.c',
 )
 
@@ -70,25 +88,6 @@ executable('ovsdb-client', sources,
     link_with : [ ovsdb, openvswitch ],
     install : true,
     install_dir: install_prefix / 'bin',
-)
-
-# MSR: file generation probably should be moved to a separate folder with its own meson.build file
-# ovsdb/_server.ovsschema.inc
-prog_python = import('python').find_installation('python3')
-ovsdb__server_ovsschema_inc = custom_target(
-    '_server.ovsschema.inc',
-    input : meson.project_source_root() + '/ovsdb/_server.ovsschema',
-    output : '_server.ovsschema.inc',
-    command : [
-        prog_python,
-        meson.project_source_root() + '/build-aux/text2c',
-    ],
-    feed : true,
-    capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
 )
 
 sources = files(

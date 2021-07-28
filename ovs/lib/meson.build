@@ -1,6 +1,81 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2021 VMware, Inc.
 
+lib_ovsdb_server_idl_c = custom_target(
+    'ovsdb-server-idl.c',
+#    input : meson.project_source_root() + '/lib/ovsdb-server-idl.ovsidl',
+    input : lib_ovsdb_server_idl_ovsidl,
+    output : 'ovsdb-server-idl.c',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'c-idl-source',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+lib_ovsdb_server_idl_h = custom_target(
+    'ovsdb-server-idl.h',
+#    input : meson.project_source_root() + '/lib/ovsdb-server-idl.ovsidl',
+    input : lib_ovsdb_server_idl_ovsidl,
+    output : 'ovsdb-server-idl.h',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'c-idl-header',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+lib_vswitch_idl_c = custom_target(
+    'vswitch-idl.c',
+#    input : meson.project_source_root() + '/lib/vswitch-idl.ovsidl',
+    input : lib_vswitch_idl_ovsidl,
+    output : 'vswitch-idl.c',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'c-idl-source',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+lib_vswitch_idl_h = custom_target(
+    'vswitch-idl.h',
+#    input : meson.project_source_root() + '/lib/vswitch-idl.ovsidl',
+    input : lib_vswitch_idl_ovsidl,
+    output : 'vswitch-idl.h',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/ovsdb/ovsdb-idlc.in',
+        'c-idl-header',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
 #sources = files(
 #    'dpif-netdev-lookup-avx512-gather.c',
 #    'dpif-netdev-extract-avx512.c',
@@ -66,7 +141,8 @@ lib_meta_flow_inc = custom_target(
     ],
     capture : '@OUTPUT@',
     env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
         'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
     ],
 )
@@ -84,7 +160,8 @@ lib_nx_match_inc = custom_target(
     ],
     capture : '@OUTPUT@',
     env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
         'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
     ],
 )
@@ -102,7 +179,8 @@ lib_ofp_actions_inc1 = custom_target(
     ],
     capture : '@OUTPUT@',
     env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
         'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
     ],
 )
@@ -120,7 +198,8 @@ lib_ofp_actions_inc2 = custom_target(
     ],
     capture : '@OUTPUT@',
     env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
         'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
     ],
 )
@@ -141,7 +220,8 @@ lib_ofp_errors_inc = custom_target(
     ],
     capture : '@OUTPUT@',
     env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
         'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
     ],
 )
@@ -161,7 +241,8 @@ lib_ofp_msgs_inc = custom_target(
     ],
     capture : '@OUTPUT@',
     env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
+#        'PYTHONPATH=' + meson.project_source_root() + '/python',
         'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
     ],
 )
@@ -193,14 +274,14 @@ sources = files(
 	'dummy.c',
 	'dpctl.c',
 	'dp-packet.c',
-#	'dpif-netdev-extract-study.c',
+	'dpif-netdev-extract-study.c',
 	'dpif-netdev-lookup.c',
 	'dpif-netdev-lookup-autovalidator.c',
 	'dpif-netdev-lookup-generic.c',
 	'dpif-netdev.c',
 	'dpif-netdev-private-dfc.c',
 	'dpif-netdev-private-dpif.c',
-#	'dpif-netdev-private-extract.c',
+	'dpif-netdev-private-extract.c',
 	'dpif-netdev-perf.c',
 	'dpif.c',
 	'heap.c',
@@ -339,8 +420,8 @@ sources = files(
 	'signals.c',
 	'socket-util-unix.c',
 	'stream-unix.c',
-	'ovsdb-server-idl.c',
-	'vswitch-idl.c',
+##	'ovsdb-server-idl.c',
+##	'vswitch-idl.c',
 # Linux specific start    
     'dpif-netlink.c',
 	'dpif-netlink-rtnl.c',
@@ -363,6 +444,12 @@ sources = files(
 
 sources += [
     meson.project_build_root() + '/' + 'dirs.c',
+    lib_ovsdb_server_idl_c,
+    lib_ovsdb_server_idl_h,
+    lib_vswitch_idl_c,
+    lib_vswitch_idl_h,
+    include_odp_netlink_h,
+    include_odp_netlink_macros_h,
 ]
 
 sources += [
