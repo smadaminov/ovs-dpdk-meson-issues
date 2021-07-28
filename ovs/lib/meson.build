@@ -89,6 +89,24 @@ lib_nx_match_inc = custom_target(
     ],
 )
 
+# lib/ofc-actions.inc1
+lib_ofp_actions_inc1 = custom_target(
+    'ofp-actions.inc1',
+    input : meson.project_source_root() + '/lib/ofp-actions.c',
+    output : 'ofp-actions.inc1',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/build-aux/extract-ofp-actions',
+        'prototypes',
+        '@INPUT@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
 sources = files(
 	'aes128.c',
 	'backtrace.c',
@@ -288,6 +306,7 @@ sources = files(
 sources += [
     lib_meta_flow_inc,
     lib_nx_match_inc,
+    lib_ofp_actions_inc1
 ]
 
 deps = [ thread_dep ]
