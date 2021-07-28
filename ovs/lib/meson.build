@@ -115,7 +115,7 @@ lib_ofp_actions_inc2 = custom_target(
     command : [
         prog_python,
         meson.project_source_root() + '/build-aux/extract-ofp-actions',
-        'prototypes',
+        'definitions',
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
