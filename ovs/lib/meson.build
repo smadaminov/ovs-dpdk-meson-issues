@@ -125,6 +125,47 @@ lib_ofp_actions_inc2 = custom_target(
     ],
 )
 
+# lib/ofp-errors.inc
+lib_ofp_errors_inc = custom_target(
+    'ofp-errors.inc',
+    input : [
+        meson.project_source_root() + '/include/openvswitch/ofp-errors.h',
+        meson.project_source_root() + '/include/openflow/openflow-common.h',
+    ],
+    output : 'ofp-errors.inc',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/build-aux/extract-ofp-errors',
+        '@INPUT0@',
+        '@INPUT1@',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
+# lib/ofp-msgs.inc
+lib_ofp_msgs_inc = custom_target(
+    'ofp-msgs.inc',
+    input : [
+        meson.project_source_root() + '/include/openvswitch/ofp-msgs.h',
+    ],
+    output : 'ofp-msgs.inc',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/build-aux/extract-ofp-msgs',
+        '@INPUT@',
+        'lib/ofp-msgs.inc',
+    ],
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
 sources = files(
 	'aes128.c',
 	'backtrace.c',
@@ -326,6 +367,8 @@ sources += [
     lib_nx_match_inc,
     lib_ofp_actions_inc1,
     lib_ofp_actions_inc2,
+    lib_ofp_errors_inc,
+    lib_ofp_msgs_inc,
 ]
 
 deps = [ thread_dep ]
