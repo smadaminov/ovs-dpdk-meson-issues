@@ -168,6 +168,32 @@ foreach m : map_files
     )
 endforeach
 
+c_in_files = [
+    ['lib', 'dirs.c'],
+]
+
+# MSR: this is temporary hard-coded
+# though values are taken from the 'config.log'
+# however, most of it should be coming from
+# supplied options and have default values
+cin_processing = configuration_data()
+cin_processing.set('BANNER', '/* -*- mode: c; buffer-read-only: t -*- */') # this a temporary hack and may break backwards compatability with autotools
+cin_processing.set('srcdir', meson.project_source_root())
+cin_processing.set_quoted('LOGDIR', '/var/log/openvswitch')
+cin_processing.set_quoted('RUNDIR', '/var/run/openvswitch')
+cin_processing.set_quoted('DBDIR', '/etc/openvswitch')
+cin_processing.set_quoted('bindir', '/bin')
+cin_processing.set_quoted('sysconfdir', '/etc')
+cin_processing.set_quoted('pkgdatadir', '/usr/share/openvswitch')
+
+foreach cin : c_in_files
+    configure_file(
+        input : cin.get(0) + '/' + cin.get(1) + '.in',
+        output : cin.get(1),
+        configuration : cin_processing,
+    )
+endforeach
+
 global_inc = include_directories(
     '.',
     'include',

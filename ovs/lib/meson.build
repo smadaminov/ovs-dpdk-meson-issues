@@ -339,7 +339,6 @@ sources = files(
 	'signals.c',
 	'socket-util-unix.c',
 	'stream-unix.c',
-#    'dirs.c',
 	'ovsdb-server-idl.c',
 	'vswitch-idl.c',
 # Linux specific start    
@@ -361,6 +360,10 @@ sources = files(
     'dns-resolve.h',
     'dns-resolve-stub.c',
 )
+
+sources += [
+    meson.project_build_root() + '/' + 'dirs.c',
+]
 
 sources += [
     lib_meta_flow_inc,
