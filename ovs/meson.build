@@ -4,12 +4,13 @@
 # Meson Newer Version Justification
 # Version 0.56.0: enables 'project_build_root' for 'meson' object
 # Version 0.57.0: enables use of 'env' in 'custom_target'
+# Version 0.59.0: enables use of 'feed' in 'custom_target'
 
 project('openvswitch', 'C',
         version: '2.16.90',
         license: 'Apache2.0',
         default_options: ['buildtype=release', 'default_library=static'],
-        meson_version: '>= 0.57.0'
+        meson_version: '>= 0.59.0'
 )
 
 as_version = meson.project_version()

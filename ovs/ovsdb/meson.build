@@ -72,9 +72,32 @@ executable('ovsdb-client', sources,
     install_dir: install_prefix / 'bin',
 )
 
+# MSR: file generation probably should be moved to a separate folder with its own meson.build file
+# ovsdb/_server.ovsschema.inc
+prog_python = import('python').find_installation('python3')
+ovsdb__server_ovsschema_inc = custom_target(
+    '_server.ovsschema.inc',
+    input : meson.project_source_root() + '/ovsdb/_server.ovsschema',
+    output : '_server.ovsschema.inc',
+    command : [
+        prog_python,
+        meson.project_source_root() + '/build-aux/text2c',
+    ],
+    feed : true,
+    capture : '@OUTPUT@',
+    env : [
+        'PYTHONPATH=' + meson.project_source_root() + '/python',
+        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+    ],
+)
+
 sources = files(
     'ovsdb-server.c',
 )
+
+sources += [
+    ovsdb__server_ovsschema_inc,
+]
 
 deps = []
 
