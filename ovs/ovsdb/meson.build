@@ -12,11 +12,7 @@ ovsdb__server_ovsschema_inc = custom_target(
     ],
     feed : true,
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 sources = files(
