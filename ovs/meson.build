@@ -26,11 +26,16 @@ conf_soversion.set('SOVERSION', as_soversion)
 
 cc = meson.get_compiler('c')
 
+prog_python = import('python').find_installation('python3')
+python_env = environment()
+python_env.set('PYTHONPATH', meson.project_source_root() + '/python')
+python_env.set('PYTHONDONTWRITEBYTECODE', 'yes') # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+
 cdata = configuration_data()
 
 thread_dep = dependency('threads', required : true)
-m_dep = cc.find_library('m', required : true)
-
+#m_dep = cc.find_library('m', required : true)
+m_dep = ''
 check_headers = [
   ['HAVE_BITS_FLOATN_COMMON_H', 'bits/floatn/common.h'],
   ['HAVE_DLFCN_H', 'dlfcn.h'],
@@ -256,11 +261,6 @@ install_prefix = '/usr/local/'
 #]
 
 # MSR: file generation probably should be moved to a separate folder with its own meson.build file
-prog_python = import('python').find_installation('python3')
-python_env = environment()
-python_env.set('PYTHONPATH', meson.project_source_root() + '/python')
-python_env.set('PYTHONDONTWRITEBYTECODE', 'yes') # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-
 lib_ovsdb_server_idl_ovsidl = custom_target(
     'ovsdb-server-idl.ovsidl',
     input : [
