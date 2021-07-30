@@ -257,6 +257,10 @@ install_prefix = '/usr/local/'
 
 # MSR: file generation probably should be moved to a separate folder with its own meson.build file
 prog_python = import('python').find_installation('python3')
+python_env = environment()
+python_env.set('PYTHONPATH', meson.project_source_root() + '/python')
+python_env.set('PYTHONDONTWRITEBYTECODE', 'yes') # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
+
 lib_ovsdb_server_idl_ovsidl = custom_target(
     'ovsdb-server-idl.ovsidl',
     input : [
@@ -272,11 +276,7 @@ lib_ovsdb_server_idl_ovsidl = custom_target(
         '@INPUT1@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 lib_vswitch_idl_ovsidl = custom_target(
@@ -294,11 +294,7 @@ lib_vswitch_idl_ovsidl = custom_target(
         '@INPUT1@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 vtep_vtep_idl_ovsidl = custom_target(
@@ -316,11 +312,7 @@ vtep_vtep_idl_ovsidl = custom_target(
         '@INPUT1@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 subdir('lib')

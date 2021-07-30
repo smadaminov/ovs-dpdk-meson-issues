@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright(c) 2021 VMware, Inc.
 
-# MSR: in this form it is not portable!
 include_odp_netlink_h = custom_target(
     'odp-netlink.h',
     input : meson.project_source_root() + '/datapath/linux/compat/include/linux/openvswitch.h',
     output : 'odp-netlink.h',
     command : [
-        'sed',
-        '-f',
-        meson.project_source_root() + '/build-aux/extract-odp-netlink-h',
+        prog_python,
+        meson.project_source_root() + '/build-aux/extract-odp-netlink-h.py',
+        '@INPUT@',
     ],
-    feed : '@INPUT@',
     capture : '@OUTPUT@',
+    env : python_env,
 )
 
 # MSR: in this form it is not portable!

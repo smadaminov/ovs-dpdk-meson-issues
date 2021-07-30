@@ -13,11 +13,7 @@ lib_ovsdb_server_idl_c = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 lib_ovsdb_server_idl_h = custom_target(
@@ -32,11 +28,7 @@ lib_ovsdb_server_idl_h = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 lib_vswitch_idl_c = custom_target(
@@ -51,11 +43,7 @@ lib_vswitch_idl_c = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 lib_vswitch_idl_h = custom_target(
@@ -70,10 +58,7 @@ lib_vswitch_idl_h = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 #sources = files(
@@ -128,7 +113,6 @@ sflow = library(
 
 # MSR: file generation probably should be moved to a separate folder with its own meson.build file
 # lib/meta-flow.inc
-prog_python = import('python').find_installation('python3')
 lib_meta_flow_inc = custom_target(
     'meta-flow.inc',
     input : meson.project_source_root() + '/include/openvswitch/meta-flow.h',
@@ -140,11 +124,7 @@ lib_meta_flow_inc = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 # lib/nx-match.inc
@@ -159,11 +139,7 @@ lib_nx_match_inc = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 # lib/ofc-actions.inc1
@@ -178,11 +154,7 @@ lib_ofp_actions_inc1 = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 # lib/ofc-actions.inc2
@@ -197,11 +169,7 @@ lib_ofp_actions_inc2 = custom_target(
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 # lib/ofp-errors.inc
@@ -219,11 +187,7 @@ lib_ofp_errors_inc = custom_target(
         '@INPUT1@',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 # lib/ofp-msgs.inc
@@ -240,11 +204,7 @@ lib_ofp_msgs_inc = custom_target(
         'lib/ofp-msgs.inc',
     ],
     capture : '@OUTPUT@',
-    env : [
-        'PYTHONPATH=' + meson.project_source_root() + '/python' + ':' + meson.project_build_root() + '/python',
-#        'PYTHONPATH=' + meson.project_source_root() + '/python',
-        'PYTHONDONTWRITEBYTECODE=yes', # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-    ],
+    env : python_env,
 )
 
 sources = files(
