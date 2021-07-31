@@ -14,18 +14,17 @@ include_odp_netlink_h = custom_target(
     env : python_env,
 )
 
-# MSR: in this form it is not portable!
 include_odp_netlink_macros_h = custom_target(
     'odp-netlink-macros.h',
     input : include_odp_netlink_h,
     output : 'odp-netlink-macros.h',
     command : [
-        'sh',
-        '-f',
-        meson.project_source_root() + '/build-aux/extract-odp-netlink-macros-h',
+        prog_python,
+        meson.project_source_root() + '/build-aux/extract-odp-netlink-macros-h.py',
         '@INPUT@',
     ],
     capture : '@OUTPUT@',
+    env : python_env,
 )
 
 subdir('openvswitch')
