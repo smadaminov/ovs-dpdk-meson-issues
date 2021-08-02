@@ -375,32 +375,52 @@ sources = files(
 	'lldp/lldp.c',
 	'lldp/lldpd.c',
 	'lldp/lldpd-structs.c',
-    'daemon-unix.c',
-	'latch-unix.c',
-	'signals.c',
-	'socket-util-unix.c',
-	'stream-unix.c',
-##	'ovsdb-server-idl.c',
-##	'vswitch-idl.c',
-# Linux specific start    
-    'dpif-netlink.c',
-	'dpif-netlink-rtnl.c',
-	'if-notifier.c',
-	'netdev-linux.c',
-	'netdev-offload-tc.c',
-	'netlink-conntrack.c',
-	'netlink-notifier.c',
-	'netlink-socket.c',
-	'rtnetlink.c',
-	'route-table.c',
-	'tc.c',
-# Linux specific end
 	'dpdk-stub.c',
     'async-append-null.c', # no POSIX_AIO
     'stream-nossl.c',
     'dns-resolve.h',
     'dns-resolve-stub.c',
 )
+
+if build_machine.system() == 'windows'
+    sources += files(
+        'daemon-windows.c',
+        'getopt_long.c',
+        'getrusage-windows.c',
+        'latch-windows.c',
+        'route-table-stub.c',
+        'if-notifier-stub.c',
+        'stream-windows.c',
+        'strsep.c',
+        'dpif-netlink.c',
+        'netdev-windows.c',
+        'netlink-conntrack.c',
+        'netlink-notifier.c',
+        'netlink-socket.c',
+        'wmi.c',
+    )
+endif
+
+if build_machine.system() == 'linux'
+    sources += files(
+        'daemon-unix.c',
+        'latch-unix.c',
+        'signals.c',
+        'socket-util-unix.c',
+        'stream-unix.c',
+        'dpif-netlink.c',
+        'dpif-netlink-rtnl.c',
+        'if-notifier.c',
+        'netdev-linux.c',
+        'netdev-offload-tc.c',
+        'netlink-conntrack.c',
+        'netlink-notifier.c',
+        'netlink-socket.c',
+        'rtnetlink.c',
+        'route-table.c',
+        'tc.c',
+    )
+endif
 
 sources += [
     meson.project_build_root() + '/' + 'dirs.c',
