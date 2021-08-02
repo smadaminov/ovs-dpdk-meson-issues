@@ -8,7 +8,11 @@ sources = files(
     'xenserver.c',
 )
 
-deps = [ m_dep ]
+deps = []
+
+if build_machine.system() == 'linux'
+    deps += m_dep
+endif
 
 executable('ovs-vswitchd', sources,
   dependencies : deps,
