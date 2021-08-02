@@ -376,3 +376,8 @@
 #ifdef WIN32
 # include "include/windows/windefs.h"
 #endif
+
+/* MSR: use meson checks to enable/disable this */
+#if defined(__clang__)
+#include <intrin.h>
+#endif
