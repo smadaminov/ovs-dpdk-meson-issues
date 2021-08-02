@@ -222,6 +222,19 @@ global_inc = include_directories(
     'lib',
 )
 
+# MSR: path for pthreads should be collected
+# from options and not hardcoded
+if build_machine.system() == 'windows'
+    global_inc = include_directories(
+		'.',
+		'include',
+		'lib',
+		'include/windows',
+		'datapath-windows/include',
+		'C:/pthreads/pthreads4w/include',
+	)
+endif
+
 global_libs = []
 
 add_project_arguments('-Wstrict-prototypes', language : 'c')
