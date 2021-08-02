@@ -15,8 +15,10 @@ configure_file(
     configuration : conf_dirs_py,
 )
 
-run_command(
-    'cp',
-    meson.current_build_dir() + '/dirs.py',
-    meson.current_source_dir(),
+python_ovs_dirs_py = run_command(
+    prog_python,
+    meson.project_source_root() + '/build-aux/copy-file-from-build.py',
+    'dirs.py',
+    'dirs.py',
+    check : true,
 )

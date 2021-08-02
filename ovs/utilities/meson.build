@@ -20,7 +20,9 @@ sources = files(
     'ovs-testcontroller.c',
 )
 
-deps = [ m_dep ]
+if build_machine.system() == 'linux'
+    deps += m_dep
+endif
 
 executable('ovs-testcontroller', sources,
   dependencies : deps,
@@ -35,8 +37,6 @@ sources = files(
     'ovs-dpctl.c',
 )
 
-deps = [ m_dep ]
-
 executable('ovs-dpctl', sources,
   dependencies : deps,
   include_directories : global_inc,
@@ -50,8 +50,6 @@ sources = files(
     'ovs-ofctl.c',
 )
 
-deps = [ m_dep ]
-
 executable('ovs-ofctl', sources,
   dependencies : deps,
   include_directories : global_inc,
@@ -64,8 +62,6 @@ executable('ovs-ofctl', sources,
 sources = files(
     'ovs-vsctl.c',
 )
-
-deps = [ m_dep ]
 
 executable('ovs-vsctl', sources,
   dependencies : deps,

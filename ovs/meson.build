@@ -34,8 +34,10 @@ python_env.set('PYTHONDONTWRITEBYTECODE', 'yes') # this prevents creation of *.p
 cdata = configuration_data()
 
 thread_dep = dependency('threads', required : true)
-#m_dep = cc.find_library('m', required : true)
-m_dep = ''
+if build_machine.system() == 'linux'
+    m_dep = cc.find_library('m', required : true)
+endif
+
 check_headers = [
   ['HAVE_BITS_FLOATN_COMMON_H', 'bits/floatn/common.h'],
   ['HAVE_DLFCN_H', 'dlfcn.h'],
