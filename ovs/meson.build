@@ -52,14 +52,15 @@ if build_machine.system() == 'windows'
         ],
         required : true,
     )
-    windows_deps = [
+    windows_libs = [
         'Ws2_32', # Resolve symbols for Winsock
         'WbemUuid',
         'Shlwapi',
         'Iphlpapi',
     ]
-    foreach w : windows_deps
-        cc.find_library(
+	windows_deps = []
+    foreach w : windows_libs
+        windows_deps += cc.find_library(
             w,
             required : true,
         )
