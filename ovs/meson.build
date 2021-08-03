@@ -38,33 +38,32 @@ if build_machine.system() == 'linux'
     thread_dep = dependency('threads', required : true)
 endif
 
-# MSR: path for pthreads DLL should be collected
-# from options and not hardcoded
 if build_machine.system() == 'windows'
+    if get_option('with-pthread') == 'optval'
+        error('"with-pthread" is a required option on Windows')
+    endif
+    win_pthread_path = get_option('with-pthread')
     thread_dep = cc.find_library(
         'pthreadVC3-w32',
         dirs : [
-            'C:/pthreads/pthreads4w',
+            # Some may place DLL and LIB files under 'lib' subfolder
+            win_pthread_path,
+            win_pthread_path + '/lib',
         ],
         required : true,
     )
-    # Resolve symbols for Winsock
-    Ws2_32_dep = cc.find_library(
-        'Ws2_32',
-        required : true,
-    )
-    WbemUuid_dep = cc.find_library(
+    windows_deps = [
+        'Ws2_32', # Resolve symbols for Winsock
         'WbemUuid',
-    required : true,
-    )
-    Shlwapi_dep = cc.find_library(
         'Shlwapi',
-        required : true,
-    )
-    Iphlpapi_dep = cc.find_library(
         'Iphlpapi',
-        required : true,
-    )
+    ]
+    foreach w : windows_deps
+        cc.find_library(
+            w,
+            required : true,
+        )
+    endforeach
 endif
 
 check_headers = [
@@ -274,8 +273,6 @@ global_inc = include_directories(
     'lib',
 )
 
-# MSR: path for pthreads should be collected
-# from options and not hardcoded
 if build_machine.system() == 'windows'
     global_inc = include_directories(
 		'.',
@@ -283,7 +280,9 @@ if build_machine.system() == 'windows'
 		'lib',
 		'include/windows',
 		'datapath-windows/include',
-		'C:/pthreads/pthreads4w',
+        # Some may place header files under 'include' subfolder
+		win_pthread_path,
+        win_pthread_path + '/include',
 	)
 endif
 

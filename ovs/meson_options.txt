@@ -1,0 +1,2 @@
+option('with-pthread', type : 'string', value : 'optval',
+       description : 'Path to the POSIX threads API library for Windows')

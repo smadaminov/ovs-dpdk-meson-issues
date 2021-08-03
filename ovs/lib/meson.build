@@ -444,10 +444,7 @@ sources += [
 deps = [ thread_dep ]
 
 if build_machine.system() == 'windows'
-	deps += Ws2_32_dep
-	deps += WbemUuid_dep
-	deps += Shlwapi_dep
-	deps += Iphlpapi_dep
+    deps += windows_deps
 endif
 
 mapfile = meson.project_build_root() + '/openvswitch.map'
