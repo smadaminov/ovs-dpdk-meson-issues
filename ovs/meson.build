@@ -198,13 +198,13 @@ header_files = [
 
 conf_headers = configuration_data()
 conf_headers.set('INCLUDE_NEXT', 'include_next')
-conf_headers.set('NEXT_STDIO_H', 'stdio.h')
-conf_headers.set('NEXT_STRING_H', 'string.h')
+conf_headers.set_quoted('NEXT_STDIO_H', 'stdio.h')
+conf_headers.set_quoted('NEXT_STRING_H', 'string.h')
 
 foreach h : header_files
     configure_file(
-        input : m.get(0) + '/' + m.get(1) + '.in',
-        output : m.get(1),
+        input : h.get(0) + '/' + h.get(1) + '.in',
+        output : h.get(1),
         configuration : conf_headers,
     )
 endforeach
