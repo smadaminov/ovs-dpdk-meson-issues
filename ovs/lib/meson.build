@@ -3,7 +3,6 @@
 
 lib_ovsdb_server_idl_c = custom_target(
     'ovsdb-server-idl.c',
-#    input : meson.project_source_root() + '/lib/ovsdb-server-idl.ovsidl',
     input : lib_ovsdb_server_idl_ovsidl,
     output : 'ovsdb-server-idl.c',
     command : [
@@ -18,7 +17,6 @@ lib_ovsdb_server_idl_c = custom_target(
 
 lib_ovsdb_server_idl_h = custom_target(
     'ovsdb-server-idl.h',
-#    input : meson.project_source_root() + '/lib/ovsdb-server-idl.ovsidl',
     input : lib_ovsdb_server_idl_ovsidl,
     output : 'ovsdb-server-idl.h',
     command : [
@@ -33,7 +31,6 @@ lib_ovsdb_server_idl_h = custom_target(
 
 lib_vswitch_idl_c = custom_target(
     'vswitch-idl.c',
-#    input : meson.project_source_root() + '/lib/vswitch-idl.ovsidl',
     input : lib_vswitch_idl_ovsidl,
     output : 'vswitch-idl.c',
     command : [
@@ -48,7 +45,6 @@ lib_vswitch_idl_c = custom_target(
 
 lib_vswitch_idl_h = custom_target(
     'vswitch-idl.h',
-#    input : meson.project_source_root() + '/lib/vswitch-idl.ovsidl',
     input : lib_vswitch_idl_ovsidl,
     output : 'vswitch-idl.h',
     command : [
@@ -111,7 +107,6 @@ sflow = library(
   soversion : as_soversion,
 )
 
-# MSR: file generation probably should be moved to a separate folder with its own meson.build file
 # lib/meta-flow.inc
 lib_meta_flow_inc = custom_target(
     'meta-flow.inc',
