@@ -8,6 +8,10 @@ sources = files(
     'xenserver.c',
 )
 
+sources += [
+	include_odp_netlink_h,
+]
+
 deps = []
 
 if build_machine.system() == 'linux'

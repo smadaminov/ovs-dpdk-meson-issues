@@ -37,6 +37,10 @@ sources = files(
     'ovs-dpctl.c',
 )
 
+sources += [
+	include_odp_netlink_h,
+]
+
 executable('ovs-dpctl', sources,
   dependencies : deps,
   include_directories : global_inc,
@@ -49,6 +53,10 @@ executable('ovs-dpctl', sources,
 sources = files(
     'ovs-ofctl.c',
 )
+
+sources += [
+	include_odp_netlink_h,
+]
 
 executable('ovs-ofctl', sources,
   dependencies : deps,
