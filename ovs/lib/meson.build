@@ -443,6 +443,13 @@ sources += [
 
 deps = [ thread_dep ]
 
+if build_machine.system() == 'windows'
+	deps += winsock_dep
+	deps += WbemUuid_dep
+	deps += Shlwapi_dep
+	deps += Iphlpapi_dep
+endif
+
 mapfile = meson.project_build_root() + '/openvswitch.map'
 vflag = '-Wl'.format(meson.current_source_dir(), mapfile)
 openvswitch = library(

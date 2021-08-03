@@ -33,9 +33,37 @@ python_env.set('PYTHONDONTWRITEBYTECODE', 'yes') # this prevents creation of *.p
 
 cdata = configuration_data()
 
-thread_dep = dependency('threads', required : true)
 if build_machine.system() == 'linux'
     m_dep = cc.find_library('m', required : true)
+	thread_dep = dependency('threads', required : true)
+endif
+
+# MSR: path for pthreads DLL should be collected
+# from options and not hardcoded
+if build_machine.system() == 'windows'
+	thread_dep = cc.find_library(
+		'pthreadVC3-w32',
+		dirs : [
+			'C:/pthreads/pthreads4w',
+		],
+		required : true,
+	)
+	winsock_dep = cc.find_library(
+		'Ws2_32',
+		required : true,
+	)
+	WbemUuid_dep = cc.find_library(
+		'WbemUuid',
+		required : true,
+	)
+	Shlwapi_dep = cc.find_library(
+		'Shlwapi',
+		required : true,
+	)
+	Iphlpapi_dep = cc.find_library(
+		'Iphlpapi',
+		required : true,
+	)
 endif
 
 check_headers = [
@@ -235,7 +263,7 @@ if build_machine.system() == 'windows'
 		'lib',
 		'include/windows',
 		'datapath-windows/include',
-		'C:/pthreads/pthreads4w/include',
+		'C:/pthreads/pthreads4w',
 	)
 endif
 
