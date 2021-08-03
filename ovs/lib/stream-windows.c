@@ -231,7 +231,10 @@ static ssize_t
 windows_recv(struct stream *stream, void *buffer, size_t n)
 {
     struct windows_stream *s = stream_windows_cast(stream);
-    ssize_t retval = 0;
+	// MSR: this cast between DWORD and ssize_t is bad
+	// as there is a mix of signed and unsigned variables
+    //ssize_t retval = 0;
+	DWORD retval = 0;
     boolean result = false;
     DWORD last_error = 0;
     LPOVERLAPPED  ov = NULL;
@@ -239,7 +242,7 @@ windows_recv(struct stream *stream, void *buffer, size_t n)
 
     /* If the read operation was pending, we verify its result. */
     if (s->read_pending) {
-        if (!GetOverlappedResult(s->fd, ov, &(DWORD)retval, FALSE)) {
+        if (!GetOverlappedResult(s->fd, ov, &retval, FALSE)) {
             last_error = GetLastError();
             if (last_error == ERROR_IO_INCOMPLETE) {
                 /* If the operation is still pending, retry again. */
@@ -261,7 +264,7 @@ windows_recv(struct stream *stream, void *buffer, size_t n)
         return retval;
     }
 
-    result = ReadFile(s->fd, buffer, n, &(DWORD)retval, ov);
+    result = ReadFile(s->fd, buffer, n, &retval, ov);
 
     if (!result && GetLastError() == ERROR_IO_PENDING) {
         /* Mark the read operation as pending. */
@@ -289,7 +292,10 @@ static ssize_t
 windows_send(struct stream *stream, const void *buffer, size_t n)
 {
     struct windows_stream *s = stream_windows_cast(stream);
-    ssize_t retval = 0;
+	// MSR: this cast between DWORD and ssize_t is bad
+	// as there is a mix of signed and unsigned variables
+    //ssize_t retval = 0;
+	DWORD retval = 0;
     boolean result = false;
     DWORD last_error = 0;
     LPOVERLAPPED  ov = NULL;
@@ -297,7 +303,7 @@ windows_send(struct stream *stream, const void *buffer, size_t n)
 
     /* If the send operation was pending, we verify the result. */
     if (s->write_pending) {
-        if (!GetOverlappedResult(s->fd, ov, &(DWORD)retval, FALSE)) {
+        if (!GetOverlappedResult(s->fd, ov, &retval, FALSE)) {
             last_error = GetLastError();
             if (last_error == ERROR_IO_INCOMPLETE) {
                 /* If the operation is still pending, retry again. */
@@ -319,7 +325,7 @@ windows_send(struct stream *stream, const void *buffer, size_t n)
         return retval;
     }
 
-    result = WriteFile(s->fd, buffer, n, &(DWORD)retval, ov);
+    result = WriteFile(s->fd, buffer, n, &retval, ov);
     last_error = GetLastError();
     if (!result && last_error == ERROR_IO_PENDING) {
         /* Mark the send operation as pending. */
