@@ -29,8 +29,8 @@ cc = meson.get_compiler('c')
 prog_python = import('python').find_installation('python3')
 python_env = environment()
 python_env.set('PYTHONPATH', meson.project_source_root() + '/python')
-python_env.set('PYTHONDONTWRITEBYTECODE', 'yes') # this prevents creation of *.pyc files in 'python/build/__pycache__' directory
-
+# Prevent creation of *.pyc files in 'python/build/__pycache__' directory
+python_env.set('PYTHONDONTWRITEBYTECODE', 'yes')
 cdata = configuration_data()
 
 if build_machine.system() == 'linux'
@@ -41,29 +41,30 @@ endif
 # MSR: path for pthreads DLL should be collected
 # from options and not hardcoded
 if build_machine.system() == 'windows'
-	thread_dep = cc.find_library(
-		'pthreadVC3-w32',
-		dirs : [
-			'C:/pthreads/pthreads4w',
-		],
-		required : true,
-	)
-	winsock_dep = cc.find_library(
-		'Ws2_32',
-		required : true,
-	)
-	WbemUuid_dep = cc.find_library(
-		'WbemUuid',
-		required : true,
-	)
-	Shlwapi_dep = cc.find_library(
-		'Shlwapi',
-		required : true,
-	)
-	Iphlpapi_dep = cc.find_library(
-		'Iphlpapi',
-		required : true,
-	)
+    thread_dep = cc.find_library(
+        'pthreadVC3-w32',
+        dirs : [
+            'C:/pthreads/pthreads4w',
+        ],
+        required : true,
+    )
+    # Resolve symbols for Winsock
+    Ws2_32_dep = cc.find_library(
+        'Ws2_32',
+        required : true,
+    )
+    WbemUuid_dep = cc.find_library(
+        'WbemUuid',
+    required : true,
+    )
+    Shlwapi_dep = cc.find_library(
+        'Shlwapi',
+        required : true,
+    )
+    Iphlpapi_dep = cc.find_library(
+        'Iphlpapi',
+        required : true,
+    )
 endif
 
 check_headers = [
