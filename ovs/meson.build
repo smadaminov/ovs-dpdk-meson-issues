@@ -155,6 +155,10 @@ endforeach
 cdata.set('PACKAGE_STRING', '"' + meson.project_name() + ' ' + as_version + '"')
 cdata.set('VERSION', '"' + as_version + '"')
 
+if build_machine.system() == 'windows'
+	cdata.set('WIN32', 1)
+endif
+
 configure_file(input : 'config.h.meson',
   output : 'config.h',
   configuration : cdata)

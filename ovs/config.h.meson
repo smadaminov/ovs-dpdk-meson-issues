@@ -374,7 +374,7 @@
 
 /* MSR: fix this - move this to the build file itself */
 #ifdef WIN32
-# include "include/windows/windefs.h"
+#include "include/windows/windefs.h"
 #endif
 
 /* MSR: use meson checks to enable/disable this */
