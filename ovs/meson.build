@@ -170,17 +170,6 @@ foreach s : check_structs
   endif
 endforeach
 
-#enable_uses = [
-#  ['__USE_POSIX', 'bits/posix1_lim.h'],
-#  ['__USE_XOPEN', 'bits/xopen_lim.h'],
-#]
-#
-#foreach u : enable_uses
-#  if cc.has_header(u.get(1))
-#    cdata.set(u.get(0), 1)
-#  endif
-#endforeach
-
 cdata.set('PACKAGE_STRING', '"' + meson.project_name() + ' ' + as_version + '"')
 cdata.set('VERSION', '"' + as_version + '"')
 
@@ -320,14 +309,6 @@ add_project_arguments(
 
 install_prefix = '/usr/local/'
 
-#ovsidl_files = [
-#    ['lib', 'ovsdb-server-idl'],
-#    ['lib', 'vswitch-idl'],
-#    ['vtep', 'vtep-idl'],
-#    ['tests', 'idltest'],
-#]
-
-# MSR: file generation probably should be moved to a separate folder with its own meson.build file
 lib_ovsdb_server_idl_ovsidl = custom_target(
     'ovsdb-server-idl.ovsidl',
     input : [
