@@ -35,7 +35,7 @@ cdata = configuration_data()
 
 if build_machine.system() == 'linux'
     m_dep = cc.find_library('m', required : true)
-	thread_dep = dependency('threads', required : true)
+    thread_dep = dependency('threads', required : true)
 endif
 
 # MSR: path for pthreads DLL should be collected
