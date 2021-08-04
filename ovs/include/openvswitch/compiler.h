@@ -53,7 +53,7 @@
 #define OVS_UNLIKELY(CONDITION) (!!(CONDITION))
 #endif
 
-#if __has_feature(c_thread_safety_attributes)
+#if __has_feature(c_thread_safety_attributes) && defined(HAVE_THREAD_SAFETY)
 /* "clang" annotations for thread safety check.
  *
  * OVS_LOCKABLE indicates that the struct contains mutex element

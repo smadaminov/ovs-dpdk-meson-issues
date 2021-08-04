@@ -294,7 +294,6 @@ add_project_arguments(
     '-Wold-style-definition',
     '-Wmissing-prototypes',
     '-Wmissing-field-initializers',
-    '-Wthread-safety',
     '-fno-strict-aliasing',
     '-Wswitch-bool',
     '-Wlogical-not-parentheses',
