@@ -1,13 +1,14 @@
 #!/bin/bash
 
-find . -type f -name "*meson.build*" | xargs -I{} cp {} ../ovs-vanilla/{}
-find . -type f -name "*\.map\.in" | xargs -I{} cp {} ../ovs-vanilla/{}
-cp lib/dirs.c.in ../ovs-vanilla/lib/
-cp config.h.meson ../ovs-vanilla/
+UPSTREAM_OVS=$1
 
-cp meson_options.txt ../ovs-vanilla/
+find . -type f -name "*meson.build*" | xargs -I{} cp {} ${UPSTREAM_OVS}/{}
+find . -type f -name "*\.map\.in" | xargs -I{} cp {} ${UPSTREAM_OVS}/{}
+cp lib/dirs.c.in ${UPSTREAM_OVS}/lib/
+cp config.h.meson ${UPSTREAM_OVS}/
 
-cp build-aux/extract-odp-netlink-h.py ../ovs-vanilla/build-aux/
-cp build-aux/extract-odp-netlink-macros-h.py ../ovs-vanilla/build-aux/
-cp build-aux/copy-file-from-build.py ../ovs-vanilla/build-aux/
-cp build-aux/extract-odp-netlink-windows-dp-h.py ../ovs-vanilla/build-aux/
+cp meson_options.txt ${UPSTREAM_OVS}/
+
+cp build-aux/extract-odp-netlink-h.py ${UPSTREAM_OVS}/build-aux/
+cp build-aux/extract-odp-netlink-macros-h.py ${UPSTREAM_OVS}/build-aux/
+cp build-aux/copy-file-from-build.py ${UPSTREAM_OVS}/build-aux/
