@@ -251,7 +251,7 @@ c_in_files = [
 
 foreach cin : c_in_files
     configure_file(
-        input : cin.get(0) + '/' + cin.get(1) + '.in',
+        input : cin.get(0) + '/' + cin.get(1) + '.in.meson',
         output : cin.get(1),
         configuration : cin_processing,
     )
