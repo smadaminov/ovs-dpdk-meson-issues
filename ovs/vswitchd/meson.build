@@ -12,6 +12,8 @@ sources += [
 	include_odp_netlink_h,
 ]
 
+sources += lib_vswitch_idl_h
+
 deps = []
 
 if build_machine.system() == 'linux'

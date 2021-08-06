@@ -71,6 +71,8 @@ sources = files(
     'ovs-vsctl.c',
 )
 
+sources += lib_vswitch_idl_h
+
 executable('ovs-vsctl', sources,
   dependencies : deps,
   include_directories : global_inc,
