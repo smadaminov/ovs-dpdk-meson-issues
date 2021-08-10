@@ -131,7 +131,7 @@ check_functions = [
   ['HAVE_SENDMMSG', 'sendmmsg', '#include<sys/socket.h>', ['-D_GNU_SOURCE']],
   ['HAVE_STATVFS', 'statvfs', '#include<sys/statvfs.h>', []],
   ['HAVE_STRERROR_R', 'strerror_r', '#include<string.h>', []],
-# check token ['HAVE_STRNLEN']
+  ['HAVE_STRNLEN', 'strnlen', '#include<string.h>', []],
 # check token ['HAVE_STRTOK_R_BUG']
 # check token ['HAVE_STRUCT_IFREQ_IFR_FLAGSHIGH']
 # check token ['HAVE_STRUCT_SOCKADDR_IN6_SIN6_SCOPE_ID']
