@@ -215,9 +215,7 @@ vlog_get_destination_val(const char *name)
 void
 vlog_insert_module(struct ovs_list *vlog)
 {
-    ovs_mutex_lock(&log_file_mutex);
     ovs_list_insert(&vlog_modules, vlog);
-    ovs_mutex_unlock(&log_file_mutex);
 }
 
 /* Returns the name for logging module 'module'. */

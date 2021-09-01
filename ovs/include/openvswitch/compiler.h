@@ -172,7 +172,7 @@
  * OVS_PACKED_ENUM is intended for use only as a space optimization, since it
  * only works with GCC.  That means that it must not be used in wire protocols
  * or otherwise exposed outside of a single process. */
-#if __GNUC__ && !__CHECKER__
+#if __GNUC__ && !__CHECKER__ && !__clang__
 #define OVS_PACKED_ENUM __attribute__((__packed__))
 #define HAVE_PACKED_ENUM
 #else
@@ -278,7 +278,7 @@
         extern int (*build_assert(void))[BUILD_ASSERT__(EXPR)]
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #define BUILD_ASSERT_GCCONLY(EXPR) BUILD_ASSERT(EXPR)
 #define BUILD_ASSERT_DECL_GCCONLY(EXPR) BUILD_ASSERT_DECL(EXPR)
 #else

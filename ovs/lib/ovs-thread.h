@@ -17,6 +17,11 @@
 #ifndef OVS_THREAD_H
 #define OVS_THREAD_H 1
 
+# if ! defined __declspec
+#define __declspec __declspec
+#endif
+
+
 #include <pthread.h>
 #include <stddef.h>
 #include <sys/types.h>

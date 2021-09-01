@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef SFLOW_DO_SOCKET
 #include <sys/socket.h>

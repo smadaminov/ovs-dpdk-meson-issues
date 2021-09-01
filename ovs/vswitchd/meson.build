@@ -15,6 +15,9 @@ sources += [
 sources += lib_vswitch_idl_h
 
 deps = []
+if enable_dpdk
+    deps += dpdk_lib_deps
+endif
 
 if build_machine.system() == 'linux'
     deps += m_dep
