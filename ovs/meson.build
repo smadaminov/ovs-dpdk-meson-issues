@@ -44,7 +44,7 @@ if build_machine.system() == 'windows'
     endif
     win_pthread_path = get_option('with-pthread')
     thread_dep = cc.find_library(
-        'pthreadVC3-w32',
+        'pthreadVC3',
         dirs : [
             # Some may place DLL and LIB files under 'lib' subfolder
             win_pthread_path,
