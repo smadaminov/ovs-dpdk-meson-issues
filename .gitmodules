@@ -1,0 +1,3 @@
+[submodule "ovs-dpdk-meson"]
+	path = ovs-dpdk-meson
+	url = https://github.com/smadaminov/ovs-dpdk-meson
