@@ -13,6 +13,8 @@ project('openvswitch', 'C',
         meson_version: '>= 0.59.0'
 )
 
+fs = import('fs')
+
 as_version = meson.project_version()
 ver_arr = as_version.split('.')
 
@@ -43,13 +45,16 @@ if build_machine.system() == 'windows'
         error('"with-pthread" is a required option on Windows')
     endif
     win_pthread_path = get_option('with-pthread')
+    win_pthread_dirs = [
+        win_pthread_path,
+    ]
+    # Some may place DLL and LIB files under 'lib' subfolder
+    if fs.is_dir(win_pthread_path + '\lib')
+        win_pthread_dirs += win_pthread_path + '\lib'
+    endif
     thread_dep = cc.find_library(
         'pthreadVC3',
-        dirs : [
-            # Some may place DLL and LIB files under 'lib' subfolder
-            win_pthread_path,
-            win_pthread_path + '/lib',
-        ],
+        dirs : win_pthread_dirs,
         required : true,
     )
     windows_libs = [
@@ -58,7 +63,7 @@ if build_machine.system() == 'windows'
         'Shlwapi',
         'Iphlpapi',
     ]
-	windows_deps = []
+    windows_deps = []
     foreach w : windows_libs
         windows_deps += cc.find_library(
             w,
@@ -270,10 +275,12 @@ if build_machine.system() == 'windows'
 		'lib',
 		'include/windows',
 		'datapath-windows/include',
-        # Some may place header files under 'include' subfolder
 		win_pthread_path,
-        win_pthread_path + '/include',
 	)
+    # Some may place header files under 'include' subfolder
+    if fs.is_dir(win_pthread_path + '\include')
+        global_inc += win_pthread_path + '\include'
+    endif
 endif
 
 global_libs = []
