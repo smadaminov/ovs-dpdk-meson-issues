@@ -9,7 +9,11 @@
 project('openvswitch', 'C',
         version: '2.16.90',
         license: 'Apache2.0',
-        default_options: ['buildtype=release', 'default_library=static'],
+        default_options: [
+                          'buildtype=release',
+                          'default_library=static',
+                          'warning_level=3',
+                         ],
         meson_version: '>= 0.59.0'
 )
 
@@ -287,8 +291,6 @@ global_libs = []
 
 add_project_arguments('-Wstrict-prototypes', language : 'c')
 add_project_arguments(
-    '-Wall',
-    '-Wextra',
     '-Wno-sign-compare',
     '-Wpointer-arith',
     '-Wformat',
