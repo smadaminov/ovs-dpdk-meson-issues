@@ -164,6 +164,7 @@ Frédéric Tobias Christ             fchrist@live.de
 Frode Nordahl                      frode.nordahl@gmail.com
 FUJITA Tomonori                    fujita.tomonori@lab.ntt.co.jp
 Gabe Beged-Dov                     gabe@begeddov.com
+Gaetan Rivet                       grive@u256.net
 Gaetano Catalli                    gaetano.catalli@gmail.com
 Gal Sagie                          gal.sagie@gmail.com
 Genevieve LEsperance               glesperance@pivotal.io
@@ -248,6 +249,7 @@ Leif Madsen                        lmadsen@redhat.com
 Leo Alterman
 Li RongQing                        lirongqing@baidu.com
 Lian-min Wang                      liang-min.wang@intel.com
+Lin Huang                          linhuang@ruijie.com.cn
 Liu Chang                          liuchang@cmss.chinamobile.com
 Lilijun                            jerry.lilijun@huawei.com
 Lili Huang                         huanglili.huang@huawei.com
@@ -376,8 +378,7 @@ Shashank Ram                       rams@vmware.com
 Shashwat Srivastava                shashwat.srivastava@tcs.com
 Shih-Hao Li                        shihli@vmware.com
 Shu Shen                           shu.shen@radisys.com
-Simon Horman                       horms@verge.net.au
-Simon Horman                       simon.horman@netronome.com
+Simon Horman                       simon.horman@corigine.com
 Sivaprasad Tummala                 sivaprasad.tummala@intel.com
 Sorin Vinturis                     svinturis@cloudbasesolutions.com
 Sriharsha Basavapatna              sriharsha.basavapatna@broadcom.com
@@ -416,6 +417,7 @@ Valient Gough                      vgough@pobox.com
 Venkata Anil Kommaddi              vkommadi@redhat.com
 Vishal Deep Ajmera                 vishal.deep.ajmera@ericsson.com
 Vivien Bernet-Rollande             vbr@soprive.net
+Vlad Buslov                        vladbu@nvidia.com
 Volkan Atlı                        volkan.atli@b-ulltech.com
 Wang Li                            wangli39@baidu.com
 Wang Liang                         wangliangrt@didiglobal.com
@@ -706,6 +708,7 @@ neeraj mehta                    mehtaneeraj07@gmail.com
 rahim entezari                  rahim.entezari@gmail.com
 shaoke xi                       xishaoke.xsk@gmail.com
 shivani dommeti                 shivani.dommeti@gmail.com
+Wentao Jia                      wentao.jia@easystack.cn
 weizj                           34965317@qq.com
 俊 赵                           zhaojun12@outlook.com
 冯全树(Crab)                    fqs888@126.com

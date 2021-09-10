@@ -1,8 +1,16 @@
 Post-v2.16.0
 ---------------------
+   - DPDK:
+     * EAL argument --socket-mem is no longer configured by default upon
+       start-up.  If dpdk-socket-mem and dpdk-alloc-mem are not specified,
+       DPDK defaults will be used.
+     * EAL argument --socket-limit no longer takes on the value of --socket-mem
+       by default.  'other_config:dpdk-socket-limit' can be set equal to
+       the 'other_config:dpdk-socket-mem' to preserve the legacy memory
+       limiting behavior.
 
 
-v2.16.0 - xx xxx xxxx
+v2.16.0 - 16 Aug 2021
 ---------------------
    - Removed support for 1024-bit Diffie-Hellman key exchange, which is now
      considered unsafe.
