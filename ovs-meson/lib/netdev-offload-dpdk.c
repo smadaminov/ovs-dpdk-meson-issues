@@ -375,15 +375,19 @@ dump_flow_pattern(struct ds *s,
     } else if (item->type == RTE_FLOW_ITEM_TYPE_VXLAN) {
         const struct rte_flow_item_vxlan *vxlan_spec = item->spec;
         const struct rte_flow_item_vxlan *vxlan_mask = item->mask;
+        ovs_be32 spec_vni, mask_vni;
 
         ds_put_cstr(s, "vxlan ");
         if (vxlan_spec) {
             if (!vxlan_mask) {
                 vxlan_mask = &rte_flow_item_vxlan_mask;
             }
+            spec_vni = get_unaligned_be32(ALIGNED_CAST(ovs_be32 *,
+                                                       vxlan_spec->vni));
+            mask_vni = get_unaligned_be32(ALIGNED_CAST(ovs_be32 *,
+                                                       vxlan_mask->vni));
             DUMP_PATTERN_ITEM(vxlan_mask->vni, "vni", "%"PRIu32,
-                              ntohl(*(ovs_be32 *) vxlan_spec->vni) >> 8,
-                              ntohl(*(ovs_be32 *) vxlan_mask->vni) >> 8);
+                              ntohl(spec_vni) >> 8, ntohl(mask_vni) >> 8);
         }
         ds_put_cstr(s, "/ ");
     } else {
@@ -417,8 +421,11 @@ dump_vxlan_encap(struct ds *s, const struct rte_flow_item *items)
     ds_put_format(s, "set vxlan ip-version %s ",
                   ipv4 ? "ipv4" : ipv6 ? "ipv6" : "ERR");
     if (vxlan) {
-        ds_put_format(s, "vni %"PRIu32" ",
-                      ntohl(*(ovs_be32 *) vxlan->vni) >> 8);
+        ovs_be32 vni;
+
+        vni = get_unaligned_be32(ALIGNED_CAST(ovs_be32 *,
+                                              vxlan->vni));
+        ds_put_format(s, "vni %"PRIu32" ", ntohl(vni) >> 8);
     }
     if (udp) {
         ds_put_format(s, "udp-src %"PRIu16" udp-dst %"PRIu16" ",
@@ -568,8 +575,11 @@ dump_flow_action(struct ds *s, struct ds *s_extra,
 
         ds_put_format(s, "set_ipv6_%s ", dirstr);
         if (set_ipv6) {
+            struct in6_addr addr;
+
             ds_put_cstr(s, "ipv6_addr ");
-            ipv6_format_addr((struct in6_addr *) &set_ipv6->ipv6_addr, s);
+            memcpy(&addr, set_ipv6->ipv6_addr, sizeof addr);
+            ipv6_format_addr(&addr, s);
             ds_put_cstr(s, " ");
         }
         ds_put_cstr(s, "/ ");
@@ -781,6 +791,7 @@ free_flow_patterns(struct flow_patterns *patterns)
     free(patterns->items);
     patterns->items = NULL;
     patterns->cnt = 0;
+    ds_destroy(&patterns->s_tnl);
 }
 
 static void
@@ -999,9 +1010,9 @@ parse_vxlan_match(struct flow_patterns *patterns,
     vx_spec = xzalloc(sizeof *vx_spec);
     vx_mask = xzalloc(sizeof *vx_mask);
 
-    put_unaligned_be32((ovs_be32 *) vx_spec->vni,
+    put_unaligned_be32(ALIGNED_CAST(ovs_be32 *, vx_spec->vni),
                        htonl(ntohll(match->flow.tunnel.tun_id) << 8));
-    put_unaligned_be32((ovs_be32 *) vx_mask->vni,
+    put_unaligned_be32(ALIGNED_CAST(ovs_be32 *, vx_mask->vni),
                        htonl(ntohll(match->wc.masks.tunnel.tun_id) << 8));
 
     consumed_masks->tunnel.tun_id = 0;
@@ -1314,7 +1325,11 @@ netdev_offload_dpdk_mark_rss(struct flow_patterns *patterns,
                              struct netdev *netdev,
                              uint32_t flow_mark)
 {
-    struct flow_actions actions = { .actions = NULL, .cnt = 0 };
+    struct flow_actions actions = {
+        .actions = NULL,
+        .cnt = 0,
+        .s_tnl = DS_EMPTY_INITIALIZER,
+    };
     const struct rte_flow_attr flow_attr = {
         .group = 0,
         .priority = 0,
@@ -1799,7 +1814,11 @@ netdev_offload_dpdk_actions(struct netdev *netdev,
                             size_t actions_len)
 {
     const struct rte_flow_attr flow_attr = { .ingress = 1, .transfer = 1 };
-    struct flow_actions actions = { .actions = NULL, .cnt = 0 };
+    struct flow_actions actions = {
+        .actions = NULL,
+        .cnt = 0,
+        .s_tnl = DS_EMPTY_INITIALIZER,
+    };
     struct rte_flow *flow = NULL;
     struct rte_flow_error error;
     int ret;
@@ -1823,7 +1842,11 @@ netdev_offload_dpdk_add_flow(struct netdev *netdev,
                              const ovs_u128 *ufid,
                              struct offload_info *info)
 {
-    struct flow_patterns patterns = { .items = NULL, .cnt = 0 };
+    struct flow_patterns patterns = {
+        .items = NULL,
+        .cnt = 0,
+        .s_tnl = DS_EMPTY_INITIALIZER,
+    };
     struct ufid_to_rte_flow_data *flows_data = NULL;
     bool actions_offloaded = true;
     struct rte_flow *flow;

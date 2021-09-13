@@ -232,8 +232,31 @@ When this is the case, the above command prints the load-balancing information
 of the bonds configured in datapath \fIdp\fR showing the interface associated
 with each bucket (hash).
 .
+.IP "\fBdpif-netdev/subtable-lookup-prio-get\fR"
+Lists the DPCLS implementations or lookup functions that are available as well
+as their priorities.
+.
+.IP "\fBdpif-netdev/subtable-lookup-prio-set\fR \fIlookup_function\fR \
+\fIprio\fR"
+Sets the priority of a lookup function by name, \fIlookup_function\fR, and
+priority, \fIprio\fR, which should be a positive integer value.  The highest
+priority lookup function is used for classification.
+
+The number of affected dpcls ports and subtables is returned.
+.
 .IP "\fBdpif-netdev/dpif-impl-get\fR
 Lists the DPIF implementations that are available.
 .
 .IP "\fBdpif-netdev/dpif-impl-set\fR \fIdpif_impl\fR"
 Sets the DPIF to be used to \fIdpif_impl\fR. By default "dpif_scalar" is used.
+.
+.IP "\fBdpif-netdev/miniflow-parser-get\fR
+Lists the miniflow extract implementations that are available.
+.
+.IP "\fBdpif-netdev/miniflow-parser-set\fR [\fB-pmd\fR \fIcore\fR] \
+\fIminiflow_impl\fR [\fIstudy_cnt\fR]"
+Sets the miniflow extract to \fIminiflow_impl\fR for a specified PMD or all
+PMDs in the case where no value is specified.  By default "scalar" is used.
+\fIstudy_cnt\fR defaults to 128 and indicates the number of packets that the
+"study" miniflow implementation must parse before choosing an optimal
+implementation.
