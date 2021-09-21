@@ -311,6 +311,10 @@
  *         memory_order_seq_cst for atomic_flag_clear()).
  */
 
+# if ! defined __declspec
+#define __declspec __declspec
+#endif
+
 #include <limits.h>
 #include <pthread.h>
 #include <stdbool.h>

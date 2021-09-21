@@ -97,6 +97,19 @@ if build_machine.system() == 'windows'
             required : true,
         )
     endforeach
+
+    enable_mlx5 = true
+    if enable_mlx5
+        res_lib = run_command(prog_python, '-c', 'import os; print(os.environ["DEVX_LIB_PATH"])')
+        devx_lib_dir = res_lib.stdout().strip()
+        mlx5devx_lib = cc.find_library('mlx5devx', dirs: devx_lib_dir, required: true, static : false)
+        windows_deps += mlx5devx_lib 
+
+	res_inc = run_command(prog_python, '-c', 'import os; print(os.environ["DEVX_INC_PATH"])')
+	devx_inc_dir = res_inc.stdout().strip()
+	global_inc += include_directories(devx_inc_dir)
+    endif
+
 endif
 
 check_headers = [
@@ -271,7 +284,7 @@ cin_processing.set('srcdir', meson.project_source_root())
 
 
 if build_machine.system() == 'windows'
-	install_prefix = 'c:/openvswitch/usr/local/'
+	install_prefix = 'c:/openvswitch/usr/'
 	cin_processing.set_quoted('LOGDIR', 'c:/openvswitch/var/log/')
 	cin_processing.set_quoted('RUNDIR', 'c:/openvswitch/var/run/')
 	cin_processing.set_quoted('DBDIR', 'c:/openvswitch/etc/')

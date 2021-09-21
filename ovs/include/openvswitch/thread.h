@@ -17,6 +17,10 @@
 #ifndef OPENVSWITCH_THREAD_H
 #define OPENVSWITCH_THREAD_H 1
 
+# if ! defined __declspec
+#define __declspec __declspec
+#endif
+
 #include <pthread.h>
 #include <stddef.h>
 #include <stdbool.h>

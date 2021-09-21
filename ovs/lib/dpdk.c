@@ -536,7 +536,8 @@ dpdk_init__(const struct smap *ovs_other_config)
 
     optind = 1;
 
-    if (VLOG_IS_INFO_ENABLED()) {
+    //if (VLOG_IS_INFO_ENABLED()) {
+    if (true) {
         struct ds eal_args = DS_EMPTY_INITIALIZER;
         char *joined_args = svec_join(&args, " ", ".");
 
@@ -550,7 +551,7 @@ dpdk_init__(const struct smap *ovs_other_config)
      * some arguments from it. '+1' to copy the terminating NULL.  */
     argv = xmemdup(args.names, (args.n + 1) * sizeof args.names[0]);
 
-    VLOG_INFO("Make sure things are initialized ...");
+    VLOG_INFO("XXX: Make sure things are initialized ...");
     /* Make sure things are initialized ... */
     result = rte_eal_init(args.n, argv);
 

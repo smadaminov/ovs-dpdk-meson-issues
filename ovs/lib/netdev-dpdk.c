@@ -1759,6 +1759,7 @@ netdev_dpdk_get_port_by_mac(const char *mac_str)
     dpdk_port_t port_id;
     struct eth_addr mac, port_mac;
 
+    VLOG_WARN("mac: %s", mac_str);
     if (!eth_addr_from_string(mac_str, &mac)) {
         VLOG_ERR("invalid mac: %s", mac_str);
         return DPDK_ETH_PORT_ID_INVALID;
@@ -1767,13 +1768,17 @@ netdev_dpdk_get_port_by_mac(const char *mac_str)
     RTE_ETH_FOREACH_DEV (port_id) {
         struct rte_ether_addr ea;
 
+    	VLOG_WARN("mac: %d", (int)port_id);
         rte_eth_macaddr_get(port_id, &ea);
         memcpy(port_mac.ea, ea.addr_bytes, ETH_ADDR_LEN);
         if (eth_addr_equals(mac, port_mac)) {
+		
+    	    VLOG_WARN("found port");
             return port_id;
         }
     }
 
+    VLOG_WARN("port not found!");
     return DPDK_ETH_PORT_ID_INVALID;
 }
 
@@ -1812,6 +1817,7 @@ netdev_dpdk_process_devargs(struct netdev_dpdk *dev,
     dpdk_port_t new_port_id;
 
     if (strncmp(devargs, "class=eth,mac=", 14) == 0) {
+	    VLOG_WARN("get port by mac %s\n", &devargs[14]);
         new_port_id = netdev_dpdk_get_port_by_mac(&devargs[14]);
     } else {
         new_port_id = netdev_dpdk_get_port_by_devargs(devargs);
