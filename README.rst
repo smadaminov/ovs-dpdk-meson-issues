@@ -1,6 +1,16 @@
 Porting OvS-DPDK to Windows with Meson
 --------------------------------------
 
+`DISCLAIMER:` This is work-in-progress and instructions are not complete yet!
+
+Prerequisites on Windows
+*************
+
+- Install `POSIX Threads for Windows`_ library
+
+.. _POSIX Threads for Windows:
+    https://sourceforge.net/projects/pthreads4w/
+
 For the OvS kernel driver for Windows you may need to `enable`_ test signing.
 Also, make sure that you have installed `Spectre-mitigated`_ libraries.
 
