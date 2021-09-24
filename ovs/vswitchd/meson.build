@@ -26,7 +26,7 @@ if build_machine.system() == 'linux'
 endif
 if build_machine.system() == 'windows'
     deps += windows_deps
-    deps += mlx5devx_lib
+#    deps += mlx5devx_lib
     message('vswitchd: add windows_deps')
 endif
 

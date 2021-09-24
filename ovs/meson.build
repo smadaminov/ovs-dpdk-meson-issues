@@ -9,7 +9,7 @@
 project('openvswitch', 'C',
         version: '2.16.90',
         license: 'Apache2.0',
-        default_options: ['buildtype=release', 'default_library=static'],
+        default_options: ['buildtype=debug', 'default_library=static'],
         meson_version: '>= 0.59.0'
 )
 
@@ -68,6 +68,8 @@ if build_machine.system() == 'windows'
         add_global_arguments('-msse3', language : 'c')
         add_global_arguments('-mssse3', language : 'c')
         add_global_arguments('-U__AVX512F__', language : 'c')
+	add_project_link_arguments('-Wl,/FORCE:MULTIPLE', language: 'c')
+	add_project_link_arguments('-Wl,/WHOLEARCHIVE', language: 'c')
         add_project_link_arguments('-lmincore', language: 'c')
         add_project_link_arguments('-ladvapi32', '-lsetupapi', language: 'c')
         add_project_link_arguments('-ldbghelp', language: 'c')
@@ -98,7 +100,7 @@ if build_machine.system() == 'windows'
         )
     endforeach
 
-    enable_mlx5 = true
+    enable_mlx5 = false 
     if enable_mlx5
         res_lib = run_command(prog_python, '-c', 'import os; print(os.environ["DEVX_LIB_PATH"])')
         devx_lib_dir = res_lib.stdout().strip()
