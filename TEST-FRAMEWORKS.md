@@ -18,7 +18,7 @@ Below is the list of test frameworks candidates:
 | Name | Language | Clang Support | Parallel Jobs | C | C++ | FreeBSD | RHEL | Ubuntu | Windows |
 | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
 | Avocado | ? | ? | ? | ? | ? | ? | ? | ? | ? |
-| Boost.Test | ? | ? | ? | ? | ? | ? | ? | ? | ? |
+| Boost.Test | ? | ? | ? | ? | :heavy_check_mark: | ? | ? | ? | :heavy_check_mark: |
 | Criterion | ? | ? | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ? | ? | :heavy_check_mark: |
 | Catch2 | ? | ? | ? | ? | ? | ? | ? | ? | ? |
 | bandit | ? | ? | ? | ? | ? | ? | ? | ? | ? |
