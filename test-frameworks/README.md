@@ -7,6 +7,12 @@ test C programs. It needs C++11 features supported by the compiler, but there is
 another framework Igloo (https://iglootesting.wordpress.com/) that does not
 require them. So looks like a potential candidate so far.
 
+## Boost.Test
+
+This framework targets C++. It seems to be quite powerful and with an extensive
+documentation. However, that may be its downside. Overall, looks like a
+promising candidate.
+
 ## Catch2
 
 Seems to be similar to `bandit`. `Catch2` also targets C++ and says that C may
