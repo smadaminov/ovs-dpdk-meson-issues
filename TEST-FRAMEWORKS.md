@@ -19,7 +19,7 @@ Below is the list of test frameworks candidates:
 | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
 | Avocado | ? | ? | ? | ? | ? | ? | ? | ? |
 | Boost.Test | ? | ? | ? | ? | ? | ? | ? | ? |
-| Criterion | ? | ? | ? | ? | ? | ? | ? | ? |
+| Criterion | ? | ? | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ? | ? | :heavy_check_mark: |
 | Catch2 | ? | ? | ? | ? | ? | ? | ? | ? |
 | bandit | ? | ? | ? | ? | ? | ? | ? | ? |
 | UNITY | ? | ? | ? | ? | ? | ? | ? | ? |
