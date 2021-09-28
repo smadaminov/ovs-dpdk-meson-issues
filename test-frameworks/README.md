@@ -38,6 +38,12 @@ cc -Isubprojects/libffi/src/libffi.so.7.1.0.p -Isubprojects/libffi/src -I../subp
 Thus, we stopped here as we want the test framework to work out-of-the-box on
 all platforms of interest.
 
+## UNITY
+
+Targets embedded microcontrollers and overall it is specifically a unit testing
+framework for C. It lacks features such as capturing the stdout of SUT and not
+clear how to test TAB completion with it. So we pass on this framework too.
+
 ## License
 
 BSD 3-Clause
