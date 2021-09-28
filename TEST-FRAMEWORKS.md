@@ -15,17 +15,14 @@ Below is the list of test frameworks candidates:
 
 ## Comparison Table
 
-Dillinger is currently extended with the following plugins.
-Instructions on how to use them in your own application are linked below.
-
-| Name | Language | C | C++ | Linux | Windows |
-| ------ | ------ | ------ | ------ | ------ | ------ |
-| Avocado | ? | ? | ? | ? | ? |
-| Boost.Test | ? | ? | ? | ? | ? |
-| Criterion | ? | ? | ? | ? | ? |
-| Catch2 | ? | ? | ? | ? | ? |
-| bandit | ? | ? | ? | ? | ? |
-| UNITY | ? | ? | ? | ? | ? |
+| Name | Language | Clang Support | C | C++ | FreeBSD | RHEL | Ubuntu | Windows |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| Avocado | ? | ? | ? | ? | ? | ? | ? | ? |
+| Boost.Test | ? | ? | ? | ? | ? | ? | ? | ? |
+| Criterion | ? | ? | ? | ? | ? | ? | ? | ? |
+| Catch2 | ? | ? | ? | ? | ? | ? | ? | ? |
+| bandit | ? | ? | ? | ? | ? | ? | ? | ? |
+| UNITY | ? | ? | ? | ? | ? | ? | ? | ? |
 
 ## License
 
