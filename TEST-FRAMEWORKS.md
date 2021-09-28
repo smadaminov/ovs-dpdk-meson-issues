@@ -15,14 +15,14 @@ Below is the list of test frameworks candidates:
 
 ## Comparison Table
 
-| Name | Language | Clang Support | C | C++ | FreeBSD | RHEL | Ubuntu | Windows |
-| ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
-| Avocado | ? | ? | ? | ? | ? | ? | ? | ? |
-| Boost.Test | ? | ? | ? | ? | ? | ? | ? | ? |
-| Criterion | ? | ? | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ? | ? | :heavy_check_mark: |
-| Catch2 | ? | ? | ? | ? | ? | ? | ? | ? |
-| bandit | ? | ? | ? | ? | ? | ? | ? | ? |
-| UNITY | ? | ? | ? | ? | ? | ? | ? | ? |
+| Name | Language | Clang Support | Parallel Jobs | C | C++ | FreeBSD | RHEL | Ubuntu | Windows |
+| ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
+| Avocado | ? | ? | ? | ? | ? | ? | ? | ? | ? |
+| Boost.Test | ? | ? | ? | ? | ? | ? | ? | ? | ? |
+| Criterion | ? | ? | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | ? | ? | :heavy_check_mark: |
+| Catch2 | ? | ? | ? | ? | ? | ? | ? | ? | ? |
+| bandit | ? | ? | ? | ? | ? | ? | ? | ? | ? |
+| UNITY | ? | ? | ? | ? | ? | ? | ? | ? | ? |
 
 ## License
 
