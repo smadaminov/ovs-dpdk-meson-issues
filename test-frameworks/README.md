@@ -1,5 +1,18 @@
 # Instructions and Demos
 
+## bandit
+
+Specifically target C++ application, however, looks like it could be possible to
+test C programs. It needs C++11 features supported by the compiler, but there is
+another framework Igloo (https://iglootesting.wordpress.com/) that does not
+require them. So looks like a potential candidate so far.
+
+## Catch2
+
+Seems to be similar to `bandit`. `Catch2` also targets C++ and says that C may
+work. Though it looks off-putting that it was stated in a such way. So far
+`bandit` looks more promising that `Catch2` because of that.
+
 ## Criterion
 
 Among nice features it has support for test suites and fixtures.
