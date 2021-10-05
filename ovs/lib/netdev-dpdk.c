@@ -1165,7 +1165,7 @@ dpdk_eth_dev_init(struct netdev_dpdk *dev)
     dev->started = true;
 
     rte_eth_promiscuous_enable(dev->port_id);
-    rte_eth_allmulticast_enable(dev->port_id);
+//    rte_eth_allmulticast_enable(dev->port_id);
 
     memset(&eth_addr, 0x0, sizeof(eth_addr));
     rte_eth_macaddr_get(dev->port_id, &eth_addr);
