@@ -277,42 +277,6 @@ construct_dpdk_args(const struct smap *ovs_other_config, struct svec *args)
     construct_dpdk_mutex_options(ovs_other_config, args);
 }
 
-static ssize_t
-dpdk_log_write(void *c OVS_UNUSED, const char *buf, size_t size)
-{
-    static struct vlog_rate_limit rl = VLOG_RATE_LIMIT_INIT(600, 600);
-    static struct vlog_rate_limit dbg_rl = VLOG_RATE_LIMIT_INIT(600, 600);
-
-    switch (rte_log_cur_msg_loglevel()) {
-        case RTE_LOG_DEBUG:
-            VLOG_DBG_RL(&dbg_rl, "%.*s", (int) size, buf);
-            break;
-        case RTE_LOG_INFO:
-        case RTE_LOG_NOTICE:
-            VLOG_INFO_RL(&rl, "%.*s", (int) size, buf);
-            break;
-        case RTE_LOG_WARNING:
-            VLOG_WARN_RL(&rl, "%.*s", (int) size, buf);
-            break;
-        case RTE_LOG_ERR:
-            VLOG_ERR_RL(&rl, "%.*s", (int) size, buf);
-            break;
-        case RTE_LOG_CRIT:
-        case RTE_LOG_ALERT:
-        case RTE_LOG_EMERG:
-            VLOG_EMER("%.*s", (int) size, buf);
-            break;
-        default:
-            OVS_NOT_REACHED();
-    }
-
-    return size;
-}
-
-static cookie_io_functions_t dpdk_log_func = {
-    .write = dpdk_log_write,
-};
-
 static void
 dpdk_unixctl_mem_stream(struct unixctl_conn *conn, int argc OVS_UNUSED,
                         const char *argv[] OVS_UNUSED, void *aux)
@@ -423,51 +387,9 @@ dpdk_init__(const struct smap *ovs_other_config)
     struct ovs_numa_dump *affinity = NULL;
     struct svec args = SVEC_EMPTY_INITIALIZER;
 
-    log_stream = fopencookie(NULL, "w+", dpdk_log_func);
-    if (log_stream == NULL) {
-        VLOG_ERR("Can't redirect DPDK log: %s.", ovs_strerror(errno));
-    } else {
-        setbuf(log_stream, NULL);
-        rte_openlog_stream(log_stream);
-    }
+    VLOG_INFO("Can't redirect DPDK log in Windows: %s.", ovs_strerror(errno));
 
-    if (process_vhost_flags("vhost-sock-dir", ovs_rundir(),
-                            NAME_MAX, ovs_other_config,
-                            &sock_dir_subcomponent)) {
-        struct stat s;
-        if (!strstr(sock_dir_subcomponent, "..")) {
-            vhost_sock_dir = xasprintf("%s/%s", ovs_rundir(),
-                                       sock_dir_subcomponent);
-
-            err = stat(vhost_sock_dir, &s);
-            if (err) {
-                VLOG_ERR("vhost-user sock directory '%s' does not exist.",
-                         vhost_sock_dir);
-            }
-        } else {
-            vhost_sock_dir = xstrdup(ovs_rundir());
-            VLOG_ERR("vhost-user sock directory request '%s/%s' has invalid"
-                     "characters '..' - using %s instead.",
-                     ovs_rundir(), sock_dir_subcomponent, ovs_rundir());
-        }
-        free(sock_dir_subcomponent);
-    } else {
-        vhost_sock_dir = sock_dir_subcomponent;
-    }
-
-    vhost_iommu_enabled = smap_get_bool(ovs_other_config,
-                                        "vhost-iommu-support", false);
-    VLOG_INFO("IOMMU support for vhost-user-client %s.",
-               vhost_iommu_enabled ? "enabled" : "disabled");
-
-    vhost_postcopy_enabled = smap_get_bool(ovs_other_config,
-                                           "vhost-postcopy-support", false);
-    if (vhost_postcopy_enabled && memory_locked()) {
-        VLOG_WARN("vhost-postcopy-support and mlockall are not compatible.");
-        vhost_postcopy_enabled = false;
-    }
-    VLOG_INFO("POSTCOPY support for vhost-user-client %s.",
-              vhost_postcopy_enabled ? "enabled" : "disabled");
+    rte_openlog_stream(log_stream);
 
     per_port_memory = smap_get_bool(ovs_other_config,
                                     "per-port-memory", false);
@@ -561,40 +483,12 @@ dpdk_init__(const struct smap *ovs_other_config)
         VLOG_EMER("Unable to initialize DPDK: %s", ovs_strerror(rte_errno));
         return false;
     }
-
-    if (VLOG_IS_DBG_ENABLED()) {
-        size_t size;
-        char *response = NULL;
-        FILE *stream = open_memstream(&response, &size);
-
-        if (stream) {
-            fprintf(stream, "rte_memzone_dump:\n");
-            rte_memzone_dump(stream);
-            fprintf(stream, "rte_log_dump:\n");
-            rte_log_dump(stream);
-            fclose(stream);
-            VLOG_DBG("%s", response);
-            free(response);
-        } else {
-            VLOG_DBG("Could not dump memzone and log levels. "
-                     "Unable to open memstream: %s.", ovs_strerror(errno));
-        }
-    }
-
-    unixctl_command_register("dpdk/log-list", "", 0, 0,
-                             dpdk_unixctl_mem_stream, rte_log_dump);
-    unixctl_command_register("dpdk/log-set", "{level | pattern:level}", 0,
-                             INT_MAX, dpdk_unixctl_log_set, NULL);
-    unixctl_command_register("dpdk/get-malloc-stats", "", 0, 0,
-                             dpdk_unixctl_mem_stream,
-                             malloc_dump_stats_wrapper);
-
     /* We are called from the main thread here */
     RTE_PER_LCORE(_lcore_id) = NON_PMD_CORE_ID;
 
+    VLOG_INFO("Register the dpdk classes");
     /* Finally, register the dpdk classes */
     netdev_dpdk_register();
-    netdev_register_flow_api_provider(&netdev_offload_dpdk);
     return true;
 }
 
@@ -615,7 +509,7 @@ dpdk_init(const struct smap *ovs_other_config)
         static struct ovsthread_once once_enable = OVSTHREAD_ONCE_INITIALIZER;
 
         if (ovsthread_once_start(&once_enable)) {
-            VLOG_INFO("Using %s", rte_version());
+            VLOG_INFO("Using %s", "rte_version"); /* not exposed in DPDK. */
             VLOG_INFO("DPDK Enabled - initializing...");
             enabled = dpdk_init__(ovs_other_config);
             if (enabled) {

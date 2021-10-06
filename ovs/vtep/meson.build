@@ -40,6 +40,9 @@ sources = [
 ]
 
 deps = []
+if enable_dpdk
+    deps += dpdk_lib_deps
+endif
 
 mapfile = meson.project_build_root() + '/vtep.map'
 vflag = '-Wl'.format(meson.current_source_dir(), mapfile)

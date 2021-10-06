@@ -1,2 +1,4 @@
 option('with-pthread', type : 'string', value : 'optval',
        description : 'Path to the POSIX threads API library for Windows')
+option('with-dpdk', type : 'string', value : 'optval',
+       description : 'Path to DPDK library for Windows')

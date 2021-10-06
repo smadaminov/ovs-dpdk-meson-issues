@@ -370,7 +370,6 @@ sources = files(
 	'lldp/lldp.c',
 	'lldp/lldpd.c',
 	'lldp/lldpd-structs.c',
-	'dpdk-stub.c',
     'async-append-null.c', # no POSIX_AIO
     'stream-nossl.c',
     'dns-resolve.h',
@@ -393,7 +392,18 @@ if build_machine.system() == 'windows'
         'netlink-notifier.c',
         'netlink-socket.c',
         'wmi.c',
+#	'syslog-direct.c',
+#	'syslog-libc.c',
+	'syslog-null.c',
     )
+
+    if enable_dpdk
+        sources += files(
+	    'dpdk.c',
+        'netdev-dpdk.c',
+	)
+	deps += dpdk_lib_deps
+    endif
 endif
 
 if build_machine.system() == 'linux'

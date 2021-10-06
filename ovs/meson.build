@@ -9,7 +9,7 @@
 project('openvswitch', 'C',
         version: '2.16.90',
         license: 'Apache2.0',
-        default_options: ['buildtype=release', 'default_library=static'],
+        default_options: ['buildtype=debug', 'default_library=static'],
         meson_version: '>= 0.59.0'
 )
 
@@ -25,6 +25,8 @@ conf_soversion = configuration_data()
 conf_soversion.set('SOVERSION', as_soversion)
 
 cc = meson.get_compiler('c')
+enable_dpdk = false
+global_inc = []
 
 prog_python = import('python').find_installation('python3')
 python_env = environment()
@@ -42,15 +44,47 @@ if build_machine.system() == 'windows'
     if get_option('with-pthread') == 'optval'
         error('"with-pthread" is a required option on Windows')
     endif
+
+    # suppress all warnings
+    # add_global_arguments('-w', language : 'c')
+
+    add_global_arguments('-U_MSC_VER', language : 'c')
+    add_global_arguments('-D__GNUC__', language : 'c')
+    # add_global_arguments('-std=c11', language : 'c')
+    add_global_arguments('-std=gnu99', language : 'c')
+    add_global_arguments('-D_TIMESPEC_DEFINED', language : 'c')
+    # add_global_arguments('-D_CRT_NO_TIME_T', language : 'c')
+    add_global_arguments('-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS', language : 'c')
+    add_global_arguments('-D_CRT_SECURE_NO_DEPRECATE', language : 'c')
+
+
+    if get_option('with-dpdk') != 'optval'
+        dpdk_lib_path = get_option('with-dpdk')
+        message('DPDK path=', dpdk_lib_path)
+        cdata.set('DPDK_NETDEV', 1)
+        cdata.set('HAVE_RTE_CONFIG_H', 1)
+        dpdk_lib_deps = dependency('libdpdk', required : true, static : true)
+        enable_dpdk = true
+        add_global_arguments('-msse3', language : 'c')
+        add_global_arguments('-mssse3', language : 'c')
+        add_global_arguments('-U__AVX512F__', language : 'c')
+	add_project_link_arguments('-Wl,/FORCE:MULTIPLE', language: 'c')
+	add_project_link_arguments('-Wl,/WHOLEARCHIVE', language: 'c')
+        add_project_link_arguments('-lmincore', language: 'c')
+        add_project_link_arguments('-ladvapi32', '-lsetupapi', language: 'c')
+        add_project_link_arguments('-ldbghelp', language: 'c')
+    endif
+
     win_pthread_path = get_option('with-pthread')
     thread_dep = cc.find_library(
-        'pthreadVC3-w32',
+        'pthreadVC3',
         dirs : [
             # Some may place DLL and LIB files under 'lib' subfolder
             win_pthread_path,
             win_pthread_path + '/lib',
         ],
         required : true,
+        static: true,
     )
     windows_libs = [
         'Ws2_32', # Resolve symbols for Winsock
@@ -65,6 +99,19 @@ if build_machine.system() == 'windows'
             required : true,
         )
     endforeach
+
+    enable_mlx5 = false
+    if enable_mlx5
+        res_lib = run_command(prog_python, '-c', 'import os; print(os.environ["DEVX_LIB_PATH"])')
+        devx_lib_dir = res_lib.stdout().strip()
+        mlx5devx_lib = cc.find_library('mlx5devx', dirs: devx_lib_dir, required: true, static : false)
+        windows_deps += mlx5devx_lib
+
+	res_inc = run_command(prog_python, '-c', 'import os; print(os.environ["DEVX_INC_PATH"])')
+	devx_inc_dir = res_inc.stdout().strip()
+	global_inc += include_directories(devx_inc_dir)
+    endif
+
 endif
 
 check_headers = [
@@ -236,12 +283,25 @@ subdir('include')
 cin_processing = configuration_data()
 cin_processing.set('BANNER', '/* -*- mode: c; buffer-read-only: t -*- */') # this a temporary hack and may break backwards compatability with autotools
 cin_processing.set('srcdir', meson.project_source_root())
-cin_processing.set_quoted('LOGDIR', '/var/log/openvswitch')
-cin_processing.set_quoted('RUNDIR', '/var/run/openvswitch')
-cin_processing.set_quoted('DBDIR', '/etc/openvswitch')
-cin_processing.set_quoted('bindir', '/bin')
-cin_processing.set_quoted('sysconfdir', '/etc')
-cin_processing.set_quoted('pkgdatadir', '/usr/share/openvswitch')
+
+
+if build_machine.system() == 'windows'
+	install_prefix = 'c:/openvswitch/usr/'
+	cin_processing.set_quoted('LOGDIR', 'c:/openvswitch/var/log/')
+	cin_processing.set_quoted('RUNDIR', 'c:/openvswitch/var/run/')
+	cin_processing.set_quoted('DBDIR', 'c:/openvswitch/etc/')
+	cin_processing.set_quoted('bindir', 'c:/openvswitch/bin')
+	cin_processing.set_quoted('sysconfdir', 'c:/openvswitch/etc')
+	cin_processing.set_quoted('pkgdatadir', 'c:/openvswitch/usr/share/')
+else
+	install_prefix = '/usr/local/'
+	cin_processing.set_quoted('LOGDIR', '/var/log/openvswitch')
+	cin_processing.set_quoted('RUNDIR', '/var/run/openvswitch')
+	cin_processing.set_quoted('DBDIR', '/etc/openvswitch')
+	cin_processing.set_quoted('bindir', '/bin')
+	cin_processing.set_quoted('sysconfdir', '/etc')
+	cin_processing.set_quoted('pkgdatadir', '/usr/share/openvswitch')
+endif
 
 subdir('python/ovs')
 
@@ -257,14 +317,14 @@ foreach cin : c_in_files
     )
 endforeach
 
-global_inc = include_directories(
+global_inc += include_directories(
     '.',
     'include',
     'lib',
 )
 
 if build_machine.system() == 'windows'
-    global_inc = include_directories(
+    global_inc += include_directories(
 		'.',
 		'include',
 		'lib',
@@ -274,6 +334,12 @@ if build_machine.system() == 'windows'
 		win_pthread_path,
         win_pthread_path + '/include',
 	)
+    if enable_dpdk
+        dpdk_lib_path = get_option('with-dpdk')
+        global_inc += include_directories(
+		    dpdk_lib_path + '/include',
+	    )
+    endif
 endif
 
 global_libs = []
@@ -305,8 +371,6 @@ add_project_arguments(
 #    '-Warray-bounds-pointer-arithmetic',
     language : 'c',
 )
-
-install_prefix = '/usr/local/'
 
 lib_ovsdb_server_idl_ovsidl = custom_target(
     'ovsdb-server-idl.ovsidl',
