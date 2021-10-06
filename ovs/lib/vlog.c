@@ -215,9 +215,16 @@ vlog_get_destination_val(const char *name)
 void
 vlog_insert_module(struct ovs_list *vlog)
 {
+/* There is a bug here related to linking pthread.
+ * I think it's related to WHOLEARCHIVE option.
+ * */
+#ifndef _WIN32
     ovs_mutex_lock(&log_file_mutex);
+#endif
     ovs_list_insert(&vlog_modules, vlog);
+#ifndef _WIN32
     ovs_mutex_unlock(&log_file_mutex);
+#endif
 }
 
 /* Returns the name for logging module 'module'. */

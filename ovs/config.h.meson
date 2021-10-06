@@ -377,11 +377,4 @@
 #include "include/windows/windefs.h"
 #endif
 
-/* MSR: use meson checks to enable/disable this
-   and still not clear why it does not work on Linux
-   or maybe I should include this header only in Windows */
-#if defined(__clang__) && defined(WIN32)
-#include <intrin.h>
-#endif
-
 #mesondefine HAVE_THREAD_SAFETY

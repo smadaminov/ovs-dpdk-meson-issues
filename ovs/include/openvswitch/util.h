@@ -100,7 +100,7 @@ OVS_NO_RETURN void ovs_assert_failure(const char *, const char *, const char *);
  * dereference any pointer, so it would be surprising for it to cause any
  * problems in practice.
  */
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #define OBJECT_OFFSETOF(OBJECT, MEMBER) offsetof(typeof(*(OBJECT)), MEMBER)
 #else
 #define OBJECT_OFFSETOF(OBJECT, MEMBER) \

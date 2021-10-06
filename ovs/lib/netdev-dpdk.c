@@ -22,9 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#ifndef WIN32
 #include <linux/virtio_net.h>
-#include <sys/socket.h>
 #include <linux/if.h>
+#endif
+#include <sys/socket.h>
 
 #include <rte_bus_pci.h>
 #include <rte_config.h>
@@ -37,7 +39,9 @@
 #include <rte_meter.h>
 #include <rte_pci.h>
 #include <rte_version.h>
+#ifndef WIN32
 #include <rte_vhost.h>
+#endif
 
 #include "cmap.h"
 #include "coverage.h"
@@ -180,7 +184,7 @@ static void destroy_device(int vid);
 static int vring_state_changed(int vid, uint16_t queue_id, int enable);
 static void destroy_connection(int vid);
 static void vhost_guest_notified(int vid);
-
+/*
 static const struct vhost_device_ops virtio_net_device_ops =
 {
     .new_device =  new_device,
@@ -191,7 +195,7 @@ static const struct vhost_device_ops virtio_net_device_ops =
     .destroy_connection = destroy_connection,
     .guest_notified = vhost_guest_notified,
 };
-
+*/
 /* Custom software stats for dpdk ports */
 struct netdev_dpdk_sw_stats {
     /* No. of retries when unable to transmit. */
@@ -536,7 +540,9 @@ struct netdev_rxq_dpdk {
 };
 
 static void netdev_dpdk_destruct(struct netdev *netdev);
+#ifndef WIN32
 static void netdev_dpdk_vhost_destruct(struct netdev *netdev);
+#endif
 
 static int netdev_dpdk_get_sw_custom_stats(const struct netdev *,
                                            struct netdev_custom_stats *);
@@ -550,8 +556,12 @@ netdev_dpdk_get_ingress_policer(const struct netdev_dpdk *dev);
 static bool
 is_dpdk_class(const struct netdev_class *class)
 {
+#ifdef WIN32
+    return class->destruct == netdev_dpdk_destruct;
+#else
     return class->destruct == netdev_dpdk_destruct
            || class->destruct == netdev_dpdk_vhost_destruct;
+#endif
 }
 
 /* DPDK NIC drivers allocate RX buffers at a particular granularity, typically
@@ -1165,8 +1175,10 @@ dpdk_eth_dev_init(struct netdev_dpdk *dev)
     dev->started = true;
 
     rte_eth_promiscuous_enable(dev->port_id);
+#if 0
+    /* This is a bug. */
     rte_eth_allmulticast_enable(dev->port_id);
-
+#endif
     memset(&eth_addr, 0x0, sizeof(eth_addr));
     rte_eth_macaddr_get(dev->port_id, &eth_addr);
     VLOG_INFO_RL(&rl, "Port "DPDK_PORT_ID_FMT": "ETH_ADDR_FMT,
@@ -1301,7 +1313,7 @@ netdev_dpdk_get_num_ports(struct rte_device *device)
     }
     return count;
 }
-
+#ifndef WIN32
 static int
 vhost_common_construct(struct netdev *netdev)
     OVS_REQUIRES(dpdk_mutex)
@@ -1423,7 +1435,7 @@ netdev_dpdk_vhost_client_construct(struct netdev *netdev)
     ovs_mutex_unlock(&dpdk_mutex);
     return err;
 }
-
+#endif 
 static int
 netdev_dpdk_construct(struct netdev *netdev)
 {
@@ -1499,7 +1511,7 @@ netdev_dpdk_destruct(struct netdev *netdev)
 
     ovs_mutex_unlock(&dpdk_mutex);
 }
-
+#ifndef WIN32
 /* rte_vhost_driver_unregister() can call back destroy_device(), which will
  * try to acquire 'dpdk_mutex' and possibly 'dev->mutex'.  To avoid a
  * deadlock, none of the mutexes must be held while calling this function. */
@@ -1551,7 +1563,7 @@ netdev_dpdk_vhost_destruct(struct netdev *netdev)
 out:
     free(vhost_id);
 }
-
+#endif
 static void
 netdev_dpdk_dealloc(struct netdev *netdev)
 {
@@ -1759,6 +1771,7 @@ netdev_dpdk_get_port_by_mac(const char *mac_str)
     dpdk_port_t port_id;
     struct eth_addr mac, port_mac;
 
+    VLOG_WARN("mac: %s", mac_str);
     if (!eth_addr_from_string(mac_str, &mac)) {
         VLOG_ERR("invalid mac: %s", mac_str);
         return DPDK_ETH_PORT_ID_INVALID;
@@ -1767,13 +1780,17 @@ netdev_dpdk_get_port_by_mac(const char *mac_str)
     RTE_ETH_FOREACH_DEV (port_id) {
         struct rte_ether_addr ea;
 
+    	VLOG_WARN("mac: %d", (int)port_id);
         rte_eth_macaddr_get(port_id, &ea);
         memcpy(port_mac.ea, ea.addr_bytes, ETH_ADDR_LEN);
         if (eth_addr_equals(mac, port_mac)) {
+		
+    	    VLOG_WARN("found port");
             return port_id;
         }
     }
 
+    VLOG_WARN("port not found!");
     return DPDK_ETH_PORT_ID_INVALID;
 }
 
@@ -1812,6 +1829,7 @@ netdev_dpdk_process_devargs(struct netdev_dpdk *dev,
     dpdk_port_t new_port_id;
 
     if (strncmp(devargs, "class=eth,mac=", 14) == 0) {
+	    VLOG_WARN("get port by mac %s\n", &devargs[14]);
         new_port_id = netdev_dpdk_get_port_by_mac(&devargs[14]);
     } else {
         new_port_id = netdev_dpdk_get_port_by_devargs(devargs);
@@ -2052,7 +2070,7 @@ out:
 
     return err;
 }
-
+#ifndef WIN32
 static int
 netdev_dpdk_vhost_client_set_config(struct netdev *netdev,
                                     const struct smap *args,
@@ -2088,7 +2106,7 @@ netdev_dpdk_vhost_client_set_config(struct netdev *netdev,
 
     return 0;
 }
-
+#endif
 static int
 netdev_dpdk_get_numa_id(const struct netdev *netdev)
 {
@@ -2326,7 +2344,11 @@ ingress_policer_run(struct ingress_policer *policer, struct rte_mbuf **pkts,
 static bool
 is_vhost_running(struct netdev_dpdk *dev)
 {
+#ifdef WIN32
+    return false;
+#else
     return (netdev_dpdk_get_vid(dev) >= 0 && dev->vhost_reconfigured);
+#endif
 }
 
 static inline void
@@ -2398,6 +2420,7 @@ netdev_dpdk_vhost_update_rx_counters(struct netdev_dpdk *dev,
 /*
  * The receive path for the vhost port is the TX path out from guest.
  */
+#ifndef WIN32
 static int
 netdev_dpdk_vhost_rxq_recv(struct netdev_rxq *rxq,
                            struct dp_packet_batch *batch, int *qfill)
@@ -2457,7 +2480,7 @@ netdev_dpdk_vhost_rxq_enabled(struct netdev_rxq *rxq)
 
     return dev->vhost_rxq_enabled[rxq->queue_id];
 }
-
+#endif
 static int
 netdev_dpdk_rxq_recv(struct netdev_rxq *rxq, struct dp_packet_batch *batch,
                      int *qfill)
@@ -2552,7 +2575,7 @@ netdev_dpdk_filter_packet_len(struct netdev_dpdk *dev, struct rte_mbuf **pkts,
 
     return cnt;
 }
-
+#ifndef WIN32
 static inline void
 netdev_dpdk_vhost_update_tx_counters(struct netdev_dpdk *dev,
                                      struct dp_packet **packets,
@@ -2668,7 +2691,7 @@ out:
         dp_packet_delete(pkts[i]);
     }
 }
-
+#endif
 static void
 netdev_dpdk_extbuf_free(void *addr OVS_UNUSED, void *opaque)
 {
@@ -2825,13 +2848,13 @@ dpdk_do_tx_copy(struct netdev *netdev, int qid, struct dp_packet_batch *batch)
     }
 
     if (OVS_LIKELY(txcnt)) {
-        if (dev->type == DPDK_DEV_VHOST) {
-            __netdev_dpdk_vhost_send(netdev, qid, pkts, txcnt);
-        } else {
+//        if (dev->type == DPDK_DEV_VHOST) {
+//            __netdev_dpdk_vhost_send(netdev, qid, pkts, txcnt);
+//        } else {
             tx_failure += netdev_dpdk_eth_tx_burst(dev, qid,
                                                    (struct rte_mbuf **)pkts,
                                                    txcnt);
-        }
+//        }
     }
 
     dropped += qos_drops + mtu_drops + tx_failure;
@@ -2844,7 +2867,7 @@ dpdk_do_tx_copy(struct netdev *netdev, int qid, struct dp_packet_batch *batch)
         rte_spinlock_unlock(&dev->stats_lock);
     }
 }
-
+#ifndef WIN32
 static int
 netdev_dpdk_vhost_send(struct netdev *netdev, int qid,
                        struct dp_packet_batch *batch,
@@ -2860,7 +2883,7 @@ netdev_dpdk_vhost_send(struct netdev *netdev, int qid,
     }
     return 0;
 }
-
+#endif
 static inline void
 netdev_dpdk_send__(struct netdev_dpdk *dev, int qid,
                    struct dp_packet_batch *batch,
@@ -3580,7 +3603,7 @@ netdev_dpdk_update_flags(struct netdev *netdev,
 
     return error;
 }
-
+#ifndef WIN32
 static int
 netdev_dpdk_vhost_user_get_status(const struct netdev *netdev,
                                   struct smap *args)
@@ -3637,7 +3660,7 @@ netdev_dpdk_vhost_user_get_status(const struct netdev *netdev,
     ovs_mutex_unlock(&dev->mutex);
     return 0;
 }
-
+#endif
 /*
  * Convert a given uint32_t link speed defined in DPDK to a string
  * equivalent.
@@ -3712,8 +3735,9 @@ netdev_dpdk_get_status(const struct netdev *netdev, struct smap *args)
      * support; cf. RFC 3635 Section 3.2.4. */
     enum { IF_TYPE_ETHERNETCSMACD = 6 };
 
-    smap_add_format(args, "if_type", "%"PRIu32, IF_TYPE_ETHERNETCSMACD);
-    smap_add_format(args, "if_descr", "%s %s", rte_version(),
+  smap_add_format(args, "if_type", "%"PRIu32, IF_TYPE_ETHERNETCSMACD);
+    smap_add_format(args, "if_descr", "%s %s","123",
+//    smap_add_format(args, "if_descr", "%s %s", rte_version(),
                                                dev_info.driver_name);
     smap_add_format(args, "pci-vendor_id", "0x%x", vendor_id);
     smap_add_format(args, "pci-device_id", "0x%x", device_id);
@@ -3871,7 +3895,7 @@ netdev_dpdk_get_mempool_info(struct unixctl_conn *conn,
             goto out;
         }
     }
-
+#ifndef WIN32
     stream = open_memstream(&response, &size);
     if (!stream) {
         response = xasprintf("Unable to open memstream: %s.",
@@ -3879,7 +3903,7 @@ netdev_dpdk_get_mempool_info(struct unixctl_conn *conn,
         unixctl_command_reply_error(conn, response);
         goto out;
     }
-
+#endif
     if (netdev) {
         struct netdev_dpdk *dev = netdev_dpdk_cast(netdev);
 
@@ -3907,6 +3931,7 @@ out:
 /*
  * Set virtqueue flags so that we do not receive interrupts.
  */
+#ifndef WIN32
 static void
 set_irq_status(int vid)
 {
@@ -3916,7 +3941,7 @@ set_irq_status(int vid)
         rte_vhost_enable_guest_notification(vid, i, 0);
     }
 }
-
+#endif
 /*
  * Fixes mapping for vhost-user tx queues. Must be called after each
  * enabling/disabling of queues and n_txq modifications.
@@ -3969,6 +3994,7 @@ netdev_dpdk_remap_txqs(struct netdev_dpdk *dev)
 /*
  * A new virtio-net device is added to a vhost port.
  */
+#ifndef WIN32
 static int
 new_device(int vid)
 {
@@ -3977,8 +4003,9 @@ new_device(int vid)
     int newnode = 0;
     char ifname[IF_NAME_SZ];
 
+#ifndef WIN32
     rte_vhost_get_ifname(vid, ifname, sizeof ifname);
-
+#endif
     ovs_mutex_lock(&dpdk_mutex);
     /* Add device to the vhost port with the same name as that passed down. */
     LIST_FOR_EACH(dev, list_node, &dpdk_list) {
@@ -4032,7 +4059,7 @@ new_device(int vid)
 
     return 0;
 }
-
+#endif
 /* Clears mapping for all available queues of vhost interface. */
 static void
 netdev_dpdk_txq_map_clear(struct netdev_dpdk *dev)
@@ -4051,6 +4078,7 @@ netdev_dpdk_txq_map_clear(struct netdev_dpdk *dev)
  * ensure all currently queued packets have been sent/received before removing
  *  the device.
  */
+#ifndef WIN32
 static void
 destroy_device(int vid)
 {
@@ -4214,6 +4242,7 @@ netdev_dpdk_get_vid(const struct netdev_dpdk *dev)
     return ovsrcu_index_get(&dev->vid);
 }
 
+#endif
 struct ingress_policer *
 netdev_dpdk_get_ingress_policer(const struct netdev_dpdk *dev)
 {
@@ -4229,7 +4258,7 @@ netdev_dpdk_class_init(void)
      * needs to be done only once */
     if (ovsthread_once_start(&once)) {
         int ret;
-
+#ifndef WIN32
         ovs_thread_create("dpdk_watchdog", dpdk_watchdog, NULL);
         unixctl_command_register("netdev-dpdk/set-admin-state",
                                  "[netdev] up|down", 1, 2,
@@ -4250,7 +4279,7 @@ netdev_dpdk_class_init(void)
             VLOG_ERR("Ethernet device callback register error: %s",
                      rte_strerror(-ret));
         }
-
+#endif
         ovsthread_once_done(&once);
     }
 
@@ -5041,7 +5070,7 @@ out:
     ovs_mutex_unlock(&dev->mutex);
     return err;
 }
-
+#ifndef WIN32
 static int
 dpdk_vhost_reconfigure_helper(struct netdev_dpdk *dev)
     OVS_REQUIRES(dev->mutex)
@@ -5193,7 +5222,7 @@ unlock:
 
     return err;
 }
-
+#endif
 int
 netdev_dpdk_get_port_id(struct netdev *netdev)
 {
@@ -5461,7 +5490,7 @@ static const struct netdev_class dpdk_class = {
     .set_config = netdev_dpdk_set_config,
     .send = netdev_dpdk_eth_send,
 };
-
+#ifndef WIN32
 static const struct netdev_class dpdk_vhost_class = {
     .type = "dpdkvhostuser",
     NETDEV_DPDK_CLASS_COMMON,
@@ -5492,11 +5521,13 @@ static const struct netdev_class dpdk_vhost_client_class = {
     .rxq_recv = netdev_dpdk_vhost_rxq_recv,
     .rxq_enabled = netdev_dpdk_vhost_rxq_enabled,
 };
-
+#endif
 void
 netdev_dpdk_register(void)
 {
     netdev_register_provider(&dpdk_class);
+#ifndef WIN32
     netdev_register_provider(&dpdk_vhost_class);
     netdev_register_provider(&dpdk_vhost_client_class);
+#endif
 }

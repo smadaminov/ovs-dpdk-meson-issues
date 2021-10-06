@@ -6,6 +6,9 @@ sources = files(
 )
 
 deps = []
+if enable_dpdk
+    deps += dpdk_lib_deps
+endif
 
 executable('ovs-appctl', sources,
   dependencies : deps,

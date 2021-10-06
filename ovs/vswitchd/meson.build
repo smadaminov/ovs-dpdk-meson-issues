@@ -16,8 +16,18 @@ sources += lib_vswitch_idl_h
 
 deps = []
 
+
+if enable_dpdk
+    deps += dpdk_lib_deps
+endif
+
 if build_machine.system() == 'linux'
     deps += m_dep
+endif
+if build_machine.system() == 'windows'
+    deps += windows_deps
+#    deps += mlx5devx_lib
+    message('vswitchd: add windows_deps')
 endif
 
 executable('ovs-vswitchd', sources,

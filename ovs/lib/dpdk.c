@@ -274,9 +274,9 @@ construct_dpdk_args(const struct smap *ovs_other_config, struct svec *args)
     }
 
     construct_dpdk_options(ovs_other_config, args);
-    construct_dpdk_mutex_options(ovs_other_config, args);
+//    construct_dpdk_mutex_options(ovs_other_config, args);
 }
-
+/*
 static ssize_t
 dpdk_log_write(void *c OVS_UNUSED, const char *buf, size_t size)
 {
@@ -312,7 +312,7 @@ dpdk_log_write(void *c OVS_UNUSED, const char *buf, size_t size)
 static cookie_io_functions_t dpdk_log_func = {
     .write = dpdk_log_write,
 };
-
+*/
 static void
 dpdk_unixctl_mem_stream(struct unixctl_conn *conn, int argc OVS_UNUSED,
                         const char *argv[] OVS_UNUSED, void *aux)
@@ -423,6 +423,11 @@ dpdk_init__(const struct smap *ovs_other_config)
     struct ovs_numa_dump *affinity = NULL;
     struct svec args = SVEC_EMPTY_INITIALIZER;
 
+    VLOG_ERR("Can't redirect DPDK log: %s.", ovs_strerror(errno));
+    
+    rte_openlog_stream(log_stream);
+
+#ifndef WIN32
     log_stream = fopencookie(NULL, "w+", dpdk_log_func);
     if (log_stream == NULL) {
         VLOG_ERR("Can't redirect DPDK log: %s.", ovs_strerror(errno));
@@ -469,6 +474,7 @@ dpdk_init__(const struct smap *ovs_other_config)
     VLOG_INFO("POSTCOPY support for vhost-user-client %s.",
               vhost_postcopy_enabled ? "enabled" : "disabled");
 
+#endif
     per_port_memory = smap_get_bool(ovs_other_config,
                                     "per-port-memory", false);
     VLOG_INFO("Per port memory for DPDK devices %s.",
@@ -531,7 +537,8 @@ dpdk_init__(const struct smap *ovs_other_config)
 
     optind = 1;
 
-    if (VLOG_IS_INFO_ENABLED()) {
+    //if (VLOG_IS_INFO_ENABLED()) {
+    if (true) {
         struct ds eal_args = DS_EMPTY_INITIALIZER;
         char *joined_args = svec_join(&args, " ", ".");
 
@@ -545,6 +552,7 @@ dpdk_init__(const struct smap *ovs_other_config)
      * some arguments from it. '+1' to copy the terminating NULL.  */
     argv = xmemdup(args.names, (args.n + 1) * sizeof args.names[0]);
 
+    VLOG_INFO("XXX: Make sure things are initialized ...");
     /* Make sure things are initialized ... */
     result = rte_eal_init(args.n, argv);
 
@@ -561,7 +569,7 @@ dpdk_init__(const struct smap *ovs_other_config)
         VLOG_EMER("Unable to initialize DPDK: %s", ovs_strerror(rte_errno));
         return false;
     }
-
+#ifndef WIN32
     if (VLOG_IS_DBG_ENABLED()) {
         size_t size;
         char *response = NULL;
@@ -588,10 +596,11 @@ dpdk_init__(const struct smap *ovs_other_config)
     unixctl_command_register("dpdk/get-malloc-stats", "", 0, 0,
                              dpdk_unixctl_mem_stream,
                              malloc_dump_stats_wrapper);
-
+#endif
     /* We are called from the main thread here */
     RTE_PER_LCORE(_lcore_id) = NON_PMD_CORE_ID;
 
+    VLOG_INFO("Register the dpdk classes");
     /* Finally, register the dpdk classes */
     netdev_dpdk_register();
     netdev_register_flow_api_provider(&netdev_offload_dpdk);
@@ -615,7 +624,7 @@ dpdk_init(const struct smap *ovs_other_config)
         static struct ovsthread_once once_enable = OVSTHREAD_ONCE_INITIALIZER;
 
         if (ovsthread_once_start(&once_enable)) {
-            VLOG_INFO("Using %s", rte_version());
+            VLOG_INFO("Using %s", "123");
             VLOG_INFO("DPDK Enabled - initializing...");
             enabled = dpdk_init__(ovs_other_config);
             if (enabled) {
