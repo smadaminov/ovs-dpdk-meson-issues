@@ -20,6 +20,7 @@
 #include "compiler.h"
 #include "ovsdb-types.h"
 #include "openvswitch/shash.h"
+#include "util.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -31,12 +32,33 @@ struct ds;
 struct ovsdb_symbol_table;
 struct smap;
 
+struct ovsdb_atom_string {
+    char *string;
+    size_t n_refs;
+};
+
+static inline struct ovsdb_atom_string *
+ovsdb_atom_string_create_nocopy(char *str)
+{
+    struct ovsdb_atom_string *s = xzalloc(sizeof *s);
+
+    s->string = str;
+    s->n_refs = 1;
+    return s;
+}
+
+static inline struct ovsdb_atom_string *
+ovsdb_atom_string_create(const char *str)
+{
+    return ovsdb_atom_string_create_nocopy(xstrdup(str));
+}
+
 /* One value of an atomic type (given by enum ovs_atomic_type). */
 union ovsdb_atom {
     int64_t integer;
     double real;
     bool boolean;
-    char *string;
+    struct ovsdb_atom_string *s;
     struct uuid uuid;
 };
 
@@ -66,8 +88,9 @@ ovsdb_atom_needs_destruction(enum ovsdb_atomic_type type)
 static inline void
 ovsdb_atom_destroy(union ovsdb_atom *atom, enum ovsdb_atomic_type type)
 {
-    if (type == OVSDB_TYPE_STRING) {
-        free(atom->string);
+    if (type == OVSDB_TYPE_STRING && !--atom->s->n_refs) {
+        free(atom->s->string);
+        free(atom->s);
     }
 }
 
@@ -209,9 +232,10 @@ bool ovsdb_datum_equals(const struct ovsdb_datum *,
                         const struct ovsdb_type *);
 
 /* Search. */
-unsigned int ovsdb_datum_find_key(const struct ovsdb_datum *,
-                                  const union ovsdb_atom *key,
-                                  enum ovsdb_atomic_type key_type);
+bool ovsdb_datum_find_key(const struct ovsdb_datum *,
+                          const union ovsdb_atom *key,
+                          enum ovsdb_atomic_type key_type,
+                          unsigned int *pos);
 unsigned int ovsdb_datum_find_key_value(const struct ovsdb_datum *,
                                         const union ovsdb_atom *key,
                                         enum ovsdb_atomic_type key_type,
@@ -227,14 +251,19 @@ bool ovsdb_datum_excludes_all(const struct ovsdb_datum *,
                               const struct ovsdb_type *);
 void ovsdb_datum_union(struct ovsdb_datum *,
                        const struct ovsdb_datum *,
-                       const struct ovsdb_type *,
-                       bool replace);
+                       const struct ovsdb_type *);
 void ovsdb_datum_subtract(struct ovsdb_datum *a,
                           const struct ovsdb_type *a_type,
                           const struct ovsdb_datum *b,
                           const struct ovsdb_type *b_type);
 
 /* Generate and apply diffs */
+void ovsdb_datum_added_removed(struct ovsdb_datum *added,
+                               struct ovsdb_datum *removed,
+                               const struct ovsdb_datum *old,
+                               const struct ovsdb_datum *new,
+                               const struct ovsdb_type *type);
+
 void ovsdb_datum_diff(struct ovsdb_datum *diff,
                       const struct ovsdb_datum *old_datum,
                       const struct ovsdb_datum *new_datum,
@@ -244,6 +273,12 @@ struct ovsdb_error *ovsdb_datum_apply_diff(struct ovsdb_datum *new_datum,
                                            const struct ovsdb_datum *old_datum,
                                            const struct ovsdb_datum *diff,
                                            const struct ovsdb_type *type)
+OVS_WARN_UNUSED_RESULT;
+
+struct ovsdb_error * ovsdb_datum_apply_diff_in_place(
+                struct ovsdb_datum *a,
+                const struct ovsdb_datum *diff,
+                const struct ovsdb_type *type)
 OVS_WARN_UNUSED_RESULT;
 
 /* Raw operations that may not maintain the invariants. */

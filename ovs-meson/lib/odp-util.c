@@ -2941,7 +2941,7 @@ odp_nsh_key_from_attr__(const struct nlattr *attr, bool is_mask,
             const struct ovs_nsh_key_md1 *md1 = nl_attr_get(a);
             has_md1 = true;
             memcpy(nsh->context, md1->context, sizeof md1->context);
-            if (len == 2 * sizeof(*md1)) {
+            if (nsh_mask && (len == 2 * sizeof *md1)) {
                 const struct ovs_nsh_key_md1 *md1_mask = md1 + 1;
                 memcpy(nsh_mask->context, md1_mask->context,
                        sizeof(*md1_mask));
@@ -4618,7 +4618,7 @@ odp_flow_format(const struct nlattr *key, size_t key_len,
             }
             ds_put_char(ds, ')');
         }
-        if (!has_ethtype_key) {
+        if (!has_ethtype_key && mask) {
             const struct nlattr *ma = nl_attr_find__(mask, mask_len,
                                                      OVS_KEY_ATTR_ETHERTYPE);
             if (ma) {

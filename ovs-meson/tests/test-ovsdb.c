@@ -512,6 +512,18 @@ do_diff_data(struct ovs_cmdl_context *ctx)
             ovs_fatal(0, "failed to apply diff");
         }
 
+        /* Apply diff to 'old' in place. */
+        error = ovsdb_datum_apply_diff_in_place(&old, &diff, &type);
+        if (error) {
+            char *string = ovsdb_error_to_string_free(error);
+            ovs_fatal(0, "%s", string);
+        }
+
+        /* Test to make sure 'old' equals 'new' now.  */
+        if (!ovsdb_datum_equals(&new, &old, &type)) {
+            ovs_fatal(0, "failed to apply diff in place");
+        }
+
         /* Print diff */
         json = ovsdb_datum_to_json(&diff, &type);
         printf ("diff: ");
@@ -520,6 +532,11 @@ do_diff_data(struct ovs_cmdl_context *ctx)
         /* Print reincarnation */
         json = ovsdb_datum_to_json(&reincarnation, &type);
         printf ("apply diff: ");
+        print_and_free_json(json);
+
+        /* Print updated 'old' */
+        json = ovsdb_datum_to_json(&old, &type);
+        printf ("apply diff in place: ");
         print_and_free_json(json);
 
         ovsdb_datum_destroy(&new, &type);
@@ -2727,13 +2744,15 @@ print_idl_row_simple2(const struct idltest_simple2 *s, int step)
     printf("%03d: name=%s smap=[",
            step, s->name);
     for (i = 0; i < smap->n; i++) {
-        printf("[%s : %s]%s", smap->keys[i].string, smap->values[i].string,
-                i < smap->n-1? ",": "");
+        printf("[%s : %s]%s",
+               smap->keys[i].s->string, smap->values[i].s->string,
+               i < smap->n - 1 ? "," : "");
     }
     printf("] imap=[");
     for (i = 0; i < imap->n; i++) {
-        printf("[%"PRId64" : %s]%s", imap->keys[i].integer, imap->values[i].string,
-                i < imap->n-1? ",":"");
+        printf("[%"PRId64" : %s]%s",
+               imap->keys[i].integer, imap->values[i].s->string,
+               i < imap->n - 1 ? "," : "");
     }
     printf("]\n");
 }
@@ -2802,8 +2821,8 @@ do_idl_partial_update_map_column(struct ovs_cmdl_context *ctx)
     myTxn = ovsdb_idl_txn_create(idl);
     smap = idltest_simple2_get_smap(myRow, OVSDB_TYPE_STRING,
                                     OVSDB_TYPE_STRING);
-    strcpy(key_to_delete, smap->keys[0].string);
-    idltest_simple2_update_smap_delkey(myRow, smap->keys[0].string);
+    ovs_strlcpy(key_to_delete, smap->keys[0].s->string, sizeof key_to_delete);
+    idltest_simple2_update_smap_delkey(myRow, smap->keys[0].s->string);
     ovsdb_idl_txn_commit_block(myTxn);
     ovsdb_idl_txn_destroy(myTxn);
     ovsdb_idl_get_initial_snapshot(idl);

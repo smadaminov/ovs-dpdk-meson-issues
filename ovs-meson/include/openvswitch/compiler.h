@@ -244,13 +244,11 @@
  * the C compiler.
  * e.g.: https://bit.ly/2UvWwti
  */
- /*
-#if _MSC_VER >= 1900
+#if _MSC_VER >= 1900 && !__clang__
 #undef offsetof
 #define offsetof(type, member) \
     ((size_t)((char *)&(((type *)0)->member) - (char *)0))
 #endif
-*/
 
 /* Build assertions.
  *

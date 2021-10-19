@@ -184,8 +184,12 @@ dump_flow_attr(struct ds *s, struct ds *s_extra,
 
 /* Adds one pattern item 'field' with the 'mask' to dynamic string 's' using
  * 'testpmd command'-like format. */
-#define DUMP_PATTERN_ITEM(mask, field, fmt, spec_pri, mask_pri) \
-    if (is_all_ones(&mask, sizeof mask)) { \
+#define DUMP_PATTERN_ITEM(mask, has_last, field, fmt, spec_pri, mask_pri, \
+                          last_pri) \
+    if (has_last) { \
+        ds_put_format(s, field " spec " fmt " " field " mask " fmt " " field \
+                      " last " fmt " ", spec_pri, mask_pri, last_pri); \
+    } else if (is_all_ones(&mask, sizeof mask)) { \
         ds_put_format(s, field " is " fmt " ", spec_pri); \
     } else if (!is_all_zeros(&mask, sizeof mask)) { \
         ds_put_format(s, field " spec " fmt " " field " mask " fmt " ", \
@@ -207,21 +211,24 @@ dump_flow_pattern(struct ds *s,
     } else if (item->type == RTE_FLOW_ITEM_TYPE_ETH) {
         const struct rte_flow_item_eth *eth_spec = item->spec;
         const struct rte_flow_item_eth *eth_mask = item->mask;
+        uint8_t ea[ETH_ADDR_LEN];
 
         ds_put_cstr(s, "eth ");
         if (eth_spec) {
             if (!eth_mask) {
                 eth_mask = &rte_flow_item_eth_mask;
             }
-            DUMP_PATTERN_ITEM(eth_mask->src, "src", ETH_ADDR_FMT,
+            DUMP_PATTERN_ITEM(eth_mask->src, false, "src", ETH_ADDR_FMT,
                               ETH_ADDR_BYTES_ARGS(eth_spec->src.addr_bytes),
-                              ETH_ADDR_BYTES_ARGS(eth_mask->src.addr_bytes));
-            DUMP_PATTERN_ITEM(eth_mask->dst, "dst", ETH_ADDR_FMT,
+                              ETH_ADDR_BYTES_ARGS(eth_mask->src.addr_bytes),
+                              ETH_ADDR_BYTES_ARGS(ea));
+            DUMP_PATTERN_ITEM(eth_mask->dst, false, "dst", ETH_ADDR_FMT,
                               ETH_ADDR_BYTES_ARGS(eth_spec->dst.addr_bytes),
-                              ETH_ADDR_BYTES_ARGS(eth_mask->dst.addr_bytes));
-            DUMP_PATTERN_ITEM(eth_mask->type, "type", "0x%04"PRIx16,
+                              ETH_ADDR_BYTES_ARGS(eth_mask->dst.addr_bytes),
+                              ETH_ADDR_BYTES_ARGS(ea));
+            DUMP_PATTERN_ITEM(eth_mask->type, false, "type", "0x%04"PRIx16,
                               ntohs(eth_spec->type),
-                              ntohs(eth_mask->type));
+                              ntohs(eth_mask->type), 0);
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_VLAN) {
@@ -233,37 +240,53 @@ dump_flow_pattern(struct ds *s,
             if (!vlan_mask) {
                 vlan_mask = &rte_flow_item_vlan_mask;
             }
-            DUMP_PATTERN_ITEM(vlan_mask->inner_type, "inner_type", "0x%"PRIx16,
-                              ntohs(vlan_spec->inner_type),
-                              ntohs(vlan_mask->inner_type));
-            DUMP_PATTERN_ITEM(vlan_mask->tci, "tci", "0x%"PRIx16,
-                              ntohs(vlan_spec->tci), ntohs(vlan_mask->tci));
+            DUMP_PATTERN_ITEM(vlan_mask->inner_type, false, "inner_type",
+                              "0x%"PRIx16, ntohs(vlan_spec->inner_type),
+                              ntohs(vlan_mask->inner_type), 0);
+            DUMP_PATTERN_ITEM(vlan_mask->tci, false, "tci", "0x%"PRIx16,
+                              ntohs(vlan_spec->tci), ntohs(vlan_mask->tci), 0);
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_IPV4) {
         const struct rte_flow_item_ipv4 *ipv4_spec = item->spec;
         const struct rte_flow_item_ipv4 *ipv4_mask = item->mask;
+        const struct rte_flow_item_ipv4 *ipv4_last = item->last;
 
         ds_put_cstr(s, "ipv4 ");
         if (ipv4_spec) {
+            ovs_be16 fragment_offset_mask;
+
             if (!ipv4_mask) {
                 ipv4_mask = &rte_flow_item_ipv4_mask;
             }
-            DUMP_PATTERN_ITEM(ipv4_mask->hdr.src_addr, "src", IP_FMT,
+            if (!ipv4_last) {
+                ipv4_last = &rte_flow_item_ipv4_mask;
+            }
+            DUMP_PATTERN_ITEM(ipv4_mask->hdr.src_addr, false, "src", IP_FMT,
                               IP_ARGS(ipv4_spec->hdr.src_addr),
-                              IP_ARGS(ipv4_mask->hdr.src_addr));
-            DUMP_PATTERN_ITEM(ipv4_mask->hdr.dst_addr, "dst", IP_FMT,
+                              IP_ARGS(ipv4_mask->hdr.src_addr), IP_ARGS(0));
+            DUMP_PATTERN_ITEM(ipv4_mask->hdr.dst_addr, false, "dst", IP_FMT,
                               IP_ARGS(ipv4_spec->hdr.dst_addr),
-                              IP_ARGS(ipv4_mask->hdr.dst_addr));
-            DUMP_PATTERN_ITEM(ipv4_mask->hdr.next_proto_id, "proto",
+                              IP_ARGS(ipv4_mask->hdr.dst_addr), IP_ARGS(0));
+            DUMP_PATTERN_ITEM(ipv4_mask->hdr.next_proto_id, false, "proto",
                               "0x%"PRIx8, ipv4_spec->hdr.next_proto_id,
-                              ipv4_mask->hdr.next_proto_id);
-            DUMP_PATTERN_ITEM(ipv4_mask->hdr.type_of_service, "tos",
+                              ipv4_mask->hdr.next_proto_id, 0);
+            DUMP_PATTERN_ITEM(ipv4_mask->hdr.type_of_service, false, "tos",
                               "0x%"PRIx8, ipv4_spec->hdr.type_of_service,
-                              ipv4_mask->hdr.type_of_service);
-            DUMP_PATTERN_ITEM(ipv4_mask->hdr.time_to_live, "ttl",
+                              ipv4_mask->hdr.type_of_service, 0);
+            DUMP_PATTERN_ITEM(ipv4_mask->hdr.time_to_live, false, "ttl",
                               "0x%"PRIx8, ipv4_spec->hdr.time_to_live,
-                              ipv4_mask->hdr.time_to_live);
+                              ipv4_mask->hdr.time_to_live, 0);
+            fragment_offset_mask = ipv4_mask->hdr.fragment_offset ==
+                                   htons(RTE_IPV4_HDR_OFFSET_MASK |
+                                         RTE_IPV4_HDR_MF_FLAG)
+                                   ? OVS_BE16_MAX
+                                   : ipv4_mask->hdr.fragment_offset;
+            DUMP_PATTERN_ITEM(fragment_offset_mask, item->last,
+                              "fragment_offset", "0x%"PRIx16,
+                              ntohs(ipv4_spec->hdr.fragment_offset),
+                              ntohs(ipv4_mask->hdr.fragment_offset),
+                              ntohs(ipv4_last->hdr.fragment_offset));
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_UDP) {
@@ -275,12 +298,12 @@ dump_flow_pattern(struct ds *s,
             if (!udp_mask) {
                 udp_mask = &rte_flow_item_udp_mask;
             }
-            DUMP_PATTERN_ITEM(udp_mask->hdr.src_port, "src", "%"PRIu16,
+            DUMP_PATTERN_ITEM(udp_mask->hdr.src_port, false, "src", "%"PRIu16,
                               ntohs(udp_spec->hdr.src_port),
-                              ntohs(udp_mask->hdr.src_port));
-            DUMP_PATTERN_ITEM(udp_mask->hdr.dst_port, "dst", "%"PRIu16,
+                              ntohs(udp_mask->hdr.src_port), 0);
+            DUMP_PATTERN_ITEM(udp_mask->hdr.dst_port, false, "dst", "%"PRIu16,
                               ntohs(udp_spec->hdr.dst_port),
-                              ntohs(udp_mask->hdr.dst_port));
+                              ntohs(udp_mask->hdr.dst_port), 0);
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_SCTP) {
@@ -292,12 +315,12 @@ dump_flow_pattern(struct ds *s,
             if (!sctp_mask) {
                 sctp_mask = &rte_flow_item_sctp_mask;
             }
-            DUMP_PATTERN_ITEM(sctp_mask->hdr.src_port, "src", "%"PRIu16,
+            DUMP_PATTERN_ITEM(sctp_mask->hdr.src_port, false, "src", "%"PRIu16,
                               ntohs(sctp_spec->hdr.src_port),
-                              ntohs(sctp_mask->hdr.src_port));
-            DUMP_PATTERN_ITEM(sctp_mask->hdr.dst_port, "dst", "%"PRIu16,
+                              ntohs(sctp_mask->hdr.src_port), 0);
+            DUMP_PATTERN_ITEM(sctp_mask->hdr.dst_port, false, "dst", "%"PRIu16,
                               ntohs(sctp_spec->hdr.dst_port),
-                              ntohs(sctp_mask->hdr.dst_port));
+                              ntohs(sctp_mask->hdr.dst_port), 0);
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_ICMP) {
@@ -309,12 +332,12 @@ dump_flow_pattern(struct ds *s,
             if (!icmp_mask) {
                 icmp_mask = &rte_flow_item_icmp_mask;
             }
-            DUMP_PATTERN_ITEM(icmp_mask->hdr.icmp_type, "icmp_type", "%"PRIu8,
-                              icmp_spec->hdr.icmp_type,
-                              icmp_mask->hdr.icmp_type);
-            DUMP_PATTERN_ITEM(icmp_mask->hdr.icmp_code, "icmp_code", "%"PRIu8,
-                              icmp_spec->hdr.icmp_code,
-                              icmp_mask->hdr.icmp_code);
+            DUMP_PATTERN_ITEM(icmp_mask->hdr.icmp_type, false, "icmp_type",
+                              "%"PRIu8, icmp_spec->hdr.icmp_type,
+                              icmp_mask->hdr.icmp_type, 0);
+            DUMP_PATTERN_ITEM(icmp_mask->hdr.icmp_code, false, "icmp_code",
+                              "%"PRIu8, icmp_spec->hdr.icmp_code,
+                              icmp_mask->hdr.icmp_code, 0);
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_TCP) {
@@ -326,15 +349,15 @@ dump_flow_pattern(struct ds *s,
             if (!tcp_mask) {
                 tcp_mask = &rte_flow_item_tcp_mask;
             }
-            DUMP_PATTERN_ITEM(tcp_mask->hdr.src_port, "src", "%"PRIu16,
+            DUMP_PATTERN_ITEM(tcp_mask->hdr.src_port, false, "src", "%"PRIu16,
                               ntohs(tcp_spec->hdr.src_port),
-                              ntohs(tcp_mask->hdr.src_port));
-            DUMP_PATTERN_ITEM(tcp_mask->hdr.dst_port, "dst", "%"PRIu16,
+                              ntohs(tcp_mask->hdr.src_port), 0);
+            DUMP_PATTERN_ITEM(tcp_mask->hdr.dst_port, false, "dst", "%"PRIu16,
                               ntohs(tcp_spec->hdr.dst_port),
-                              ntohs(tcp_mask->hdr.dst_port));
-            DUMP_PATTERN_ITEM(tcp_mask->hdr.tcp_flags, "flags", "0x%"PRIx8,
-                              tcp_spec->hdr.tcp_flags,
-                              tcp_mask->hdr.tcp_flags);
+                              ntohs(tcp_mask->hdr.dst_port), 0);
+            DUMP_PATTERN_ITEM(tcp_mask->hdr.tcp_flags, false, "flags",
+                              "0x%"PRIx8, tcp_spec->hdr.tcp_flags,
+                              tcp_mask->hdr.tcp_flags, 0);
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_IPV6) {
@@ -347,6 +370,8 @@ dump_flow_pattern(struct ds *s,
 
         ds_put_cstr(s, "ipv6 ");
         if (ipv6_spec) {
+            uint8_t has_frag_ext_mask;
+
             if (!ipv6_mask) {
                 ipv6_mask = &rte_flow_item_ipv6_mask;
             }
@@ -354,22 +379,57 @@ dump_flow_pattern(struct ds *s,
             memcpy(&mask, ipv6_mask->hdr.src_addr, sizeof mask);
             ipv6_string_mapped(addr_str, &addr);
             ipv6_string_mapped(mask_str, &mask);
-            DUMP_PATTERN_ITEM(mask, "src", "%s", addr_str, mask_str);
+            DUMP_PATTERN_ITEM(mask, false, "src", "%s",
+                              addr_str, mask_str, "");
 
             memcpy(&addr, ipv6_spec->hdr.dst_addr, sizeof addr);
             memcpy(&mask, ipv6_mask->hdr.dst_addr, sizeof mask);
             ipv6_string_mapped(addr_str, &addr);
             ipv6_string_mapped(mask_str, &mask);
-            DUMP_PATTERN_ITEM(mask, "dst", "%s", addr_str, mask_str);
+            DUMP_PATTERN_ITEM(mask, false, "dst", "%s",
+                              addr_str, mask_str, "");
 
-            DUMP_PATTERN_ITEM(ipv6_mask->hdr.proto, "proto", "%"PRIu8,
-                              ipv6_spec->hdr.proto, ipv6_mask->hdr.proto);
-            DUMP_PATTERN_ITEM(ipv6_mask->hdr.vtc_flow, "tc", "0x%"PRIx32,
+            DUMP_PATTERN_ITEM(ipv6_mask->hdr.proto, false, "proto", "%"PRIu8,
+                              ipv6_spec->hdr.proto, ipv6_mask->hdr.proto, 0);
+            DUMP_PATTERN_ITEM(ipv6_mask->hdr.vtc_flow, false,
+                              "tc", "0x%"PRIx32,
                               ntohl(ipv6_spec->hdr.vtc_flow),
-                              ntohl(ipv6_mask->hdr.vtc_flow));
-            DUMP_PATTERN_ITEM(ipv6_mask->hdr.hop_limits, "hop", "%"PRIu8,
+                              ntohl(ipv6_mask->hdr.vtc_flow), 0);
+            DUMP_PATTERN_ITEM(ipv6_mask->hdr.hop_limits, false,
+                              "hop", "%"PRIu8,
                               ipv6_spec->hdr.hop_limits,
-                              ipv6_mask->hdr.hop_limits);
+                              ipv6_mask->hdr.hop_limits, 0);
+            has_frag_ext_mask = ipv6_mask->has_frag_ext ? UINT8_MAX : 0;
+            DUMP_PATTERN_ITEM(has_frag_ext_mask, false, "has_frag_ext",
+                              "%"PRIu8, ipv6_spec->has_frag_ext,
+                              ipv6_mask->has_frag_ext, 0);
+        }
+        ds_put_cstr(s, "/ ");
+    } else if (item->type == RTE_FLOW_ITEM_TYPE_IPV6_FRAG_EXT) {
+        const struct rte_flow_item_ipv6_frag_ext *ipv6_frag_spec = item->spec;
+        const struct rte_flow_item_ipv6_frag_ext *ipv6_frag_mask = item->mask;
+        const struct rte_flow_item_ipv6_frag_ext *ipv6_frag_last = item->last;
+        const struct rte_flow_item_ipv6_frag_ext ipv6_frag_def = {
+            .hdr.next_header = 0, .hdr.frag_data = 0};
+
+        ds_put_cstr(s, "ipv6_frag_ext ");
+        if (ipv6_frag_spec) {
+            if (!ipv6_frag_mask) {
+                ipv6_frag_mask = &ipv6_frag_def;
+            }
+            if (!ipv6_frag_last) {
+                ipv6_frag_last = &ipv6_frag_def;
+            }
+            DUMP_PATTERN_ITEM(ipv6_frag_mask->hdr.next_header, item->last,
+                              "next_hdr", "%"PRIu8,
+                              ipv6_frag_spec->hdr.next_header,
+                              ipv6_frag_mask->hdr.next_header,
+                              ipv6_frag_last->hdr.next_header);
+            DUMP_PATTERN_ITEM(ipv6_frag_mask->hdr.frag_data, item->last,
+                              "frag_data", "0x%"PRIx16,
+                              ntohs(ipv6_frag_spec->hdr.frag_data),
+                              ntohs(ipv6_frag_mask->hdr.frag_data),
+                              ntohs(ipv6_frag_last->hdr.frag_data));
         }
         ds_put_cstr(s, "/ ");
     } else if (item->type == RTE_FLOW_ITEM_TYPE_VXLAN) {
@@ -386,8 +446,8 @@ dump_flow_pattern(struct ds *s,
                                                        vxlan_spec->vni));
             mask_vni = get_unaligned_be32(ALIGNED_CAST(ovs_be32 *,
                                                        vxlan_mask->vni));
-            DUMP_PATTERN_ITEM(vxlan_mask->vni, "vni", "%"PRIu32,
-                              ntohl(spec_vni) >> 8, ntohl(mask_vni) >> 8);
+            DUMP_PATTERN_ITEM(vxlan_mask->vni, false, "vni", "%"PRIu32,
+                              ntohl(spec_vni) >> 8, ntohl(mask_vni) >> 8, 0);
         }
         ds_put_cstr(s, "/ ");
     } else {
@@ -683,7 +743,7 @@ netdev_offload_dpdk_flow_create(struct netdev *netdev,
 
 static void
 add_flow_pattern(struct flow_patterns *patterns, enum rte_flow_item_type type,
-                 const void *spec, const void *mask)
+                 const void *spec, const void *mask, const void *last)
 {
     int cnt = patterns->cnt;
 
@@ -700,7 +760,7 @@ add_flow_pattern(struct flow_patterns *patterns, enum rte_flow_item_type type,
     patterns->items[cnt].type = type;
     patterns->items[cnt].spec = spec;
     patterns->items[cnt].mask = mask;
-    patterns->items[cnt].last = NULL;
+    patterns->items[cnt].last = last;
     patterns->cnt++;
 }
 
@@ -756,7 +816,7 @@ add_flow_tnl_items(struct flow_patterns *patterns,
     patterns->tnl_pmd_items_cnt = tnl_pmd_items_cnt;
     for (i = 0; i < tnl_pmd_items_cnt; i++) {
         add_flow_pattern(patterns, tnl_pmd_items[i].type,
-                         tnl_pmd_items[i].spec, tnl_pmd_items[i].mask);
+                         tnl_pmd_items[i].spec, tnl_pmd_items[i].mask, NULL);
     }
 }
 
@@ -786,6 +846,9 @@ free_flow_patterns(struct flow_patterns *patterns)
         }
         if (patterns->items[i].mask) {
             free(CONST_CAST(void *, patterns->items[i].mask));
+        }
+        if (patterns->items[i].last) {
+            free(CONST_CAST(void *, patterns->items[i].last));
         }
     }
     free(patterns->items);
@@ -922,7 +985,7 @@ parse_tnl_ip_match(struct flow_patterns *patterns,
         consumed_masks->tunnel.ip_src = 0;
         consumed_masks->tunnel.ip_dst = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV4, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV4, spec, mask, NULL);
     } else if (!is_all_zeros(&match->wc.masks.tunnel.ipv6_src,
                              sizeof(struct in6_addr)) ||
                !is_all_zeros(&match->wc.masks.tunnel.ipv6_dst,
@@ -958,7 +1021,7 @@ parse_tnl_ip_match(struct flow_patterns *patterns,
         memset(&consumed_masks->tunnel.ipv6_dst, 0,
                sizeof consumed_masks->tunnel.ipv6_dst);
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV6, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV6, spec, mask, NULL);
     } else {
         VLOG_ERR_RL(&rl, "Tunnel L3 protocol is neither IPv4 nor IPv6");
         return -1;
@@ -988,7 +1051,7 @@ parse_tnl_udp_match(struct flow_patterns *patterns,
     consumed_masks->tunnel.tp_src = 0;
     consumed_masks->tunnel.tp_dst = 0;
 
-    add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_UDP, spec, mask);
+    add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_UDP, spec, mask, NULL);
 }
 
 static int
@@ -1018,7 +1081,8 @@ parse_vxlan_match(struct flow_patterns *patterns,
     consumed_masks->tunnel.tun_id = 0;
     consumed_masks->tunnel.flags = 0;
 
-    add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_VXLAN, vx_spec, vx_mask);
+    add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_VXLAN, vx_spec, vx_mask,
+                     NULL);
     return 0;
 }
 
@@ -1093,7 +1157,7 @@ parse_flow_match(struct netdev *netdev,
         memset(&consumed_masks->dl_src, 0, sizeof consumed_masks->dl_src);
         consumed_masks->dl_type = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_ETH, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_ETH, spec, mask, NULL);
     }
 
     /* VLAN */
@@ -1109,7 +1173,7 @@ parse_flow_match(struct netdev *netdev,
         /* Match any protocols. */
         mask->inner_type = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_VLAN, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_VLAN, spec, mask, NULL);
     }
     /* For untagged matching match->wc.masks.vlans[0].tci is 0xFFFF and
      * match->flow.vlans[0].tci is 0. Consuming is needed outside of the if
@@ -1119,7 +1183,7 @@ parse_flow_match(struct netdev *netdev,
 
     /* IP v4 */
     if (match->flow.dl_type == htons(ETH_TYPE_IP)) {
-        struct rte_flow_item_ipv4 *spec, *mask;
+        struct rte_flow_item_ipv4 *spec, *mask, *last = NULL;
 
         spec = xzalloc(sizeof *spec);
         mask = xzalloc(sizeof *mask);
@@ -1142,17 +1206,42 @@ parse_flow_match(struct netdev *netdev,
         consumed_masks->nw_src = 0;
         consumed_masks->nw_dst = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV4, spec, mask);
+        if (match->wc.masks.nw_frag & FLOW_NW_FRAG_ANY) {
+            if (!(match->flow.nw_frag & FLOW_NW_FRAG_ANY)) {
+                /* frag=no. */
+                spec->hdr.fragment_offset = 0;
+                mask->hdr.fragment_offset = htons(RTE_IPV4_HDR_OFFSET_MASK
+                                                  | RTE_IPV4_HDR_MF_FLAG);
+            } else if (match->wc.masks.nw_frag & FLOW_NW_FRAG_LATER) {
+                if (!(match->flow.nw_frag & FLOW_NW_FRAG_LATER)) {
+                    /* frag=first. */
+                    spec->hdr.fragment_offset = htons(RTE_IPV4_HDR_MF_FLAG);
+                    mask->hdr.fragment_offset = htons(RTE_IPV4_HDR_OFFSET_MASK
+                                                      | RTE_IPV4_HDR_MF_FLAG);
+                } else {
+                    /* frag=later. */
+                    last = xzalloc(sizeof *last);
+                    spec->hdr.fragment_offset =
+                        htons(1 << RTE_IPV4_HDR_FO_SHIFT);
+                    mask->hdr.fragment_offset =
+                        htons(RTE_IPV4_HDR_OFFSET_MASK);
+                    last->hdr.fragment_offset =
+                        htons(RTE_IPV4_HDR_OFFSET_MASK);
+                }
+            } else {
+                VLOG_WARN_RL(&rl, "Unknown IPv4 frag (0x%x/0x%x)",
+                             match->flow.nw_frag, match->wc.masks.nw_frag);
+                return -1;
+            }
+            consumed_masks->nw_frag = 0;
+        }
+
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV4, spec, mask, last);
 
         /* Save proto for L4 protocol setup. */
         proto = spec->hdr.next_proto_id &
                 mask->hdr.next_proto_id;
     }
-    /* If fragmented, then don't HW accelerate - for now. */
-    if (match->wc.masks.nw_frag & match->flow.nw_frag) {
-        return -1;
-    }
-    consumed_masks->nw_frag = 0;
 
     /* IP v6 */
     if (match->flow.dl_type == htons(ETH_TYPE_IPV6)) {
@@ -1169,6 +1258,10 @@ parse_flow_match(struct netdev *netdev,
                sizeof spec->hdr.src_addr);
         memcpy(spec->hdr.dst_addr, &match->flow.ipv6_dst,
                sizeof spec->hdr.dst_addr);
+        if ((match->wc.masks.nw_frag & FLOW_NW_FRAG_ANY)
+            && (match->flow.nw_frag & FLOW_NW_FRAG_ANY)) {
+            spec->has_frag_ext = 1;
+        }
 
         mask->hdr.proto = match->wc.masks.nw_proto;
         mask->hdr.hop_limits = match->wc.masks.nw_ttl;
@@ -1179,16 +1272,60 @@ parse_flow_match(struct netdev *netdev,
         memcpy(mask->hdr.dst_addr, &match->wc.masks.ipv6_dst,
                sizeof mask->hdr.dst_addr);
 
-        consumed_masks->nw_proto = 0;
         consumed_masks->nw_ttl = 0;
         consumed_masks->nw_tos = 0;
         memset(&consumed_masks->ipv6_src, 0, sizeof consumed_masks->ipv6_src);
         memset(&consumed_masks->ipv6_dst, 0, sizeof consumed_masks->ipv6_dst);
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV6, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV6, spec, mask, NULL);
 
         /* Save proto for L4 protocol setup. */
         proto = spec->hdr.proto & mask->hdr.proto;
+
+        if (spec->has_frag_ext) {
+            struct rte_flow_item_ipv6_frag_ext *frag_spec, *frag_mask,
+                *frag_last = NULL;
+
+            frag_spec = xzalloc(sizeof *frag_spec);
+            frag_mask = xzalloc(sizeof *frag_mask);
+
+            if (match->wc.masks.nw_frag & FLOW_NW_FRAG_LATER) {
+                if (!(match->flow.nw_frag & FLOW_NW_FRAG_LATER)) {
+                    /* frag=first. */
+                    frag_spec->hdr.frag_data = htons(RTE_IPV6_EHDR_MF_MASK);
+                    frag_mask->hdr.frag_data = htons(RTE_IPV6_EHDR_MF_MASK |
+                                                     RTE_IPV6_EHDR_FO_MASK);
+                    /* Move the proto match to the extension item. */
+                    frag_spec->hdr.next_header = match->flow.nw_proto;
+                    frag_mask->hdr.next_header = match->wc.masks.nw_proto;
+                    spec->hdr.proto = 0;
+                    mask->hdr.proto = 0;
+                } else {
+                    /* frag=later. */
+                    frag_last = xzalloc(sizeof *frag_last);
+                    frag_spec->hdr.frag_data =
+                        htons(1 << RTE_IPV6_EHDR_FO_SHIFT);
+                    frag_mask->hdr.frag_data = htons(RTE_IPV6_EHDR_FO_MASK);
+                    frag_last->hdr.frag_data = htons(RTE_IPV6_EHDR_FO_MASK);
+                    /* There can't be a proto for later frags. */
+                    spec->hdr.proto = 0;
+                    mask->hdr.proto = 0;
+                }
+            } else {
+                VLOG_WARN_RL(&rl, "Unknown IPv6 frag (0x%x/0x%x)",
+                             match->flow.nw_frag, match->wc.masks.nw_frag);
+                return -1;
+            }
+
+            add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_IPV6_FRAG_EXT,
+                             frag_spec, frag_mask, frag_last);
+        }
+        if (match->wc.masks.nw_frag) {
+            /* frag=no is indicated by spec->has_frag_ext=0. */
+            mask->has_frag_ext = 1;
+            consumed_masks->nw_frag = 0;
+        }
+        consumed_masks->nw_proto = 0;
     }
 
     if (proto != IPPROTO_ICMP && proto != IPPROTO_UDP  &&
@@ -1220,7 +1357,7 @@ parse_flow_match(struct netdev *netdev,
         consumed_masks->tp_dst = 0;
         consumed_masks->tcp_flags = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_TCP, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_TCP, spec, mask, NULL);
     } else if (proto == IPPROTO_UDP) {
         struct rte_flow_item_udp *spec, *mask;
 
@@ -1236,7 +1373,7 @@ parse_flow_match(struct netdev *netdev,
         consumed_masks->tp_src = 0;
         consumed_masks->tp_dst = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_UDP, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_UDP, spec, mask, NULL);
     } else if (proto == IPPROTO_SCTP) {
         struct rte_flow_item_sctp *spec, *mask;
 
@@ -1252,7 +1389,7 @@ parse_flow_match(struct netdev *netdev,
         consumed_masks->tp_src = 0;
         consumed_masks->tp_dst = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_SCTP, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_SCTP, spec, mask, NULL);
     } else if (proto == IPPROTO_ICMP) {
         struct rte_flow_item_icmp *spec, *mask;
 
@@ -1268,10 +1405,10 @@ parse_flow_match(struct netdev *netdev,
         consumed_masks->tp_src = 0;
         consumed_masks->tp_dst = 0;
 
-        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_ICMP, spec, mask);
+        add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_ICMP, spec, mask, NULL);
     }
 
-    add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_END, NULL, NULL);
+    add_flow_pattern(patterns, RTE_FLOW_ITEM_TYPE_END, NULL, NULL, NULL);
 
     if (!is_all_zeros(consumed_masks, sizeof *consumed_masks)) {
         return -1;
